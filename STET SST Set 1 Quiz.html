@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STET SST Set 1</title>
+<style>
+  :root{
+    --ink:#1c2b2d;
+    --paper:#f6f2e9;
+    --paper-2:#eee7d8;
+    --rule:#cdbfa0;
+    --accent:#8a3324;   /* terracotta-brick, exam-stamp red */
+    --accent-2:#2f5233; /* ledger green */
+    --gold:#9c7a2e;
+    --correct-bg:#e3efe0;
+    --correct-bd:#3f7d4a;
+    --wrong-bg:#f6e0dd;
+    --wrong-bd:#a4372a;
+    --selected:#f0e2b8;
+    --white:#fffdf7;
+    font-family:"Noto Serif","Noto Serif Devanagari",Georgia,serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--paper);
+    color:var(--ink);
+    background-image:
+      linear-gradient(var(--paper-2) 1px, transparent 1px);
+    background-size: 100% 2.1em;
+  }
+  header{
+    background:var(--ink);
+    color:var(--paper);
+    padding:22px 18px 26px;
+    border-bottom:6px double var(--gold);
+    position:relative;
+    cursor:pointer;
+    user-select:none;
+  }
+  header .kicker{
+    letter-spacing:.14em;
+    font-size:.7rem;
+    color:var(--gold);
+    text-transform:uppercase;
+  }
+  header h1{
+    margin:.25em 0 .1em;
+    font-size:1.5rem;
+    line-height:1.3;
+    font-weight:700;
+  }
+  header p.sub{
+    margin:0;
+    font-size:.85rem;
+    color:#d9cfa9;
+  }
+  .progress-wrap{
+    max-width:900px;margin:16px auto 0;padding:0 18px;
+  }
+  .progress-bar{
+    height:8px;background:var(--paper-2);border:1px solid var(--rule);
+    border-radius:20px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:var(--accent-2);width:0%;
+    transition:width .25s ease;
+  }
+  .progress-label{
+    font-size:.75rem;color:#5a5145;margin-top:4px;text-align:right;
+  }
+
+  .toolbar{
+    max-width:900px;margin:14px auto 0;padding:0 18px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .searchBox{
+    flex:1;
+    min-width:200px;
+    padding:8px 14px;
+    border-radius:20px;
+    border:1px solid var(--rule);
+    background:var(--paper-2);
+    color:var(--ink);
+    font-family:inherit;
+    font-size:.85rem;
+  }
+  .searchBox:focus{
+    outline:none;
+    border-color:var(--gold);
+    background:var(--white);
+  }
+  .iconbtn{
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    font-size:1.05rem;
+    width:38px;height:38px;
+    border-radius:50%;
+    display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;
+    font-family:inherit;
+    line-height:1;
+    padding:0;
+    flex-shrink:0;
+  }
+  .iconbtn:hover{background:var(--selected);}
+  .iconbtn.small{width:30px;height:30px;font-size:.9rem;background:var(--paper);}
+  .iconbtn.active{background:var(--accent-2);color:var(--white);border-color:var(--accent-2);}
+  #langGlobalBtn{font-weight:700;font-size:.85rem;background:var(--gold);color:var(--white);border-color:var(--gold);width:auto;border-radius:20px;padding:0 16px;}
+  #langGlobalBtn:hover{opacity:.85;}
+  #langGlobalBtn.active{background:var(--accent-2);border-color:var(--accent-2);}
+  .timerDisplay{
+    display:inline-flex;align-items:center;gap:6px;
+    background:var(--paper-2);border:1px solid var(--rule);
+    padding:0 14px;height:38px;border-radius:20px;
+    font-size:.85rem;font-variant-numeric:tabular-nums;
+    color:var(--ink);
+  }
+  .timerDisplay.timeup{background:var(--wrong-bg);border-color:var(--wrong-bd);color:var(--wrong-bd);font-weight:700;}
+
+  .modalOverlay{
+    display:none;
+    position:fixed;inset:0;background:rgba(28,43,45,.55);
+    z-index:100;
+    align-items:center;justify-content:center;
+    padding:18px;
+  }
+  .modalOverlay.open{display:flex;}
+  .modalBox{
+    background:var(--white);
+    border:1px solid var(--gold);
+    border-radius:6px;
+    max-width:520px;width:100%;
+    max-height:80vh;
+    overflow-y:auto;
+    padding:18px;
+  }
+  .modalBox h3{margin:0 0 4px;font-size:1.05rem;}
+  .modalLegend{font-size:.75rem;color:#5a5145;margin-bottom:12px;}
+  .modalLegend span{display:inline-flex;align-items:center;gap:4px;margin-right:14px;}
+  .legendDot{width:10px;height:10px;border-radius:50%;display:inline-block;}
+  .dashGrid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(38px,1fr));
+    gap:6px;
+  }
+  .dashCell{
+    aspect-ratio:1;
+    border-radius:4px;
+    border:none;
+    color:var(--white);
+    font-size:.75rem;
+    font-weight:700;
+    cursor:pointer;
+    font-family:inherit;
+  }
+  .dashCell.attempted{background:var(--correct-bd);}
+  .dashCell.unattempted{background:var(--wrong-bd);}
+  .modalCloseBtn{
+    margin-top:14px;
+    width:100%;
+    padding:9px;
+    border:1px solid var(--rule);
+    background:var(--paper-2);
+    border-radius:4px;
+    cursor:pointer;
+    font-family:inherit;
+    font-size:.85rem;
+  }
+
+  main{max-width:900px;margin:0 auto;padding:20px 14px 10px;}
+
+  .qcard{
+    background:var(--white);
+    border:1px solid var(--rule);
+    border-radius:4px;
+    margin-bottom:18px;
+    padding:16px 16px 14px;
+    box-shadow: 2px 2px 0 rgba(140,120,80,.15);
+    scroll-margin-top:20px;
+  }
+  .qcard.correct{border-color:var(--correct-bd);}
+  .qcard.incorrect{border-color:var(--wrong-bd);}
+
+  .qhead{
+    display:flex;justify-content:space-between;align-items:flex-start;gap:10px;
+    margin-bottom:8px;
+  }
+  .qnum{
+    font-weight:700;color:var(--accent);
+    font-size:.95rem;flex-shrink:0;
+  }
+  .langbtn{
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    color:var(--ink);
+    font-size:.72rem;
+    padding:5px 10px;
+    border-radius:20px;
+    cursor:pointer;
+    white-space:nowrap;
+    font-family:inherit;
+  }
+  .langbtn:hover{background:var(--selected);}
+
+  .qtext{white-space:pre-line;
+    font-size:1.02rem;
+    line-height:1.55;
+    margin:0 0 12px;
+  }
+
+  .options{
+    display:grid;
+    gap:8px;
+  }
+  .opt{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    border:1px solid var(--rule);
+    background:var(--paper);
+    border-radius:4px;
+    padding:9px 12px;
+    cursor:pointer;
+    font-size:.95rem;
+    line-height:1.4;
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .opt:hover{border-color:var(--gold);}
+  .opt .tag{
+    font-weight:700;
+    color:var(--gold);
+    flex-shrink:0;
+  }
+  .opt.selected{
+    background:var(--selected);
+    border-color:var(--gold);
+  }
+  .opt.locked{cursor:default;}
+  .opt.review-correct{
+    background:var(--correct-bd);
+    border-color:var(--correct-bd);
+    color:var(--white);
+  }
+  .opt.review-wrong{
+    background:var(--wrong-bd);
+    border-color:var(--wrong-bd);
+    color:var(--white);
+  }
+  .opt.review-correct .tag, .opt.review-wrong .tag{color:var(--white);}
+
+  .qfoot{
+    margin-top:10px;
+    display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  }
+  .result-pill{
+    font-size:.75rem;
+    padding:3px 10px;
+    border-radius:20px;
+    font-weight:700;
+  }
+  .result-pill.correct{background:var(--correct-bg);color:var(--correct-bd);border:1px solid var(--correct-bd);}
+  .result-pill.incorrect{background:var(--wrong-bg);color:var(--wrong-bd);border:1px solid var(--wrong-bd);}
+
+  .explbtn.active{background:var(--accent-2);color:var(--white);border-color:var(--accent-2);}
+
+  .explanation{
+    display:none;
+    margin-top:10px;
+    padding:10px 12px;
+    background:var(--paper-2);
+    border-left:3px solid var(--accent-2);
+    font-size:.88rem;
+    line-height:1.5;
+  }
+  .explanation.open{display:block;}
+
+  /* End-of-quiz submit bar */
+  .submitbar{
+    background:var(--ink);
+    padding:16px;
+    display:flex;justify-content:center;gap:12px;
+    border-radius:4px;
+    margin-top:22px;
+    border:3px solid var(--gold);
+  }
+  .submitbar button{
+    font-family:inherit;
+    font-size:.95rem;
+    font-weight:700;
+    padding:11px 26px;
+    border-radius:4px;
+    border:none;
+    cursor:pointer;
+  }
+  #submitBtn{background:var(--accent);color:var(--white);}
+  #submitBtn:hover{background:#6f2519;}
+  #jumpBtn{background:transparent;color:var(--paper);border:1px solid var(--rule);}
+
+  /* Score panel */
+  #scorePanel{
+    display:none;
+    background:var(--white);
+    border:1px solid var(--gold);
+    border-radius:4px;
+    padding:22px;
+    margin-bottom:22px;
+    text-align:center;
+  }
+  #scorePanel .scoreNum{
+    font-size:2.6rem;
+    color:var(--accent);
+    font-weight:700;
+    margin:4px 0;
+  }
+  #scorePanel .scoreLabel{font-size:.85rem;color:#5a5145;}
+  .filterRow{
+    display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px;
+  }
+  .filterRow button{
+    font-family:inherit;
+    background:var(--paper-2);
+    border:1px solid var(--rule);
+    padding:9px 16px;
+    border-radius:20px;
+    cursor:pointer;
+    font-size:.85rem;
+  }
+  .filterRow button:hover{background:var(--selected);}
+  .filterRow button.active{
+    background:var(--accent-2);color:var(--white);border-color:var(--accent-2);
+  }
+
+  #retakeBanner{
+    display:none;
+    background:var(--selected);
+    border:1px solid var(--gold);
+    padding:10px 14px;
+    border-radius:4px;
+    font-size:.85rem;
+    margin-bottom:14px;
+    text-align:center;
+  }
+
+  .hidden{display:none !important;}
+
+  @media (min-width:640px){
+    header h1{font-size:1.9rem;}
+    .qtext{font-size:1.08rem;}
+  }
+
+  /* excel-export */
+  .exportBox{margin-top:18px;padding:14px;border:1px dashed var(--rule);border-radius:8px;background:var(--paper-2);text-align:left}
+  .exportBox h4{margin:0 0 8px;font-size:.95rem}
+  .exportBox label{display:block;font-size:.8rem;margin:6px 0 3px}
+  .exportBox input[type=text]{width:100%;box-sizing:border-box;padding:8px 10px;font:inherit;font-size:.85rem;border:1px solid var(--rule);border-radius:6px;background:var(--white);color:inherit}
+  .exportBox .chk{display:flex;align-items:center;gap:6px;font-size:.8rem;margin-top:8px}
+  .exportScroll{overflow-x:auto;margin-top:10px}
+  .exportBox table{border-collapse:collapse;font-size:.75rem;min-width:100%}
+  .exportBox th,.exportBox td{border:1px solid var(--rule);padding:4px 7px;white-space:nowrap;text-align:left}
+  .exportBox th{background:var(--selected)}
+  #copyExcelBtn{margin-top:12px;font-family:inherit;font-size:.85rem;padding:10px 16px;border-radius:20px;border:1px solid var(--accent-2);background:var(--accent-2);color:var(--white);cursor:pointer;width:100%}
+  #copyExcelBtn:disabled{opacity:.5;cursor:not-allowed}
+  #copyStatus{font-size:.78rem;margin-top:6px;min-height:1.1em}
+
+  /* new-features */
+  #instaBtn{font-weight:700;font-size:.85rem;width:auto;border-radius:20px;padding:0 16px;background:var(--paper-2);}
+  #instaBtn.active{background:var(--accent-2);color:var(--white);border-color:var(--accent-2);}
+  .thinCard{max-width:900px;margin:10px auto 0;padding:0 18px;}
+  .thinCard .thinInner{background:var(--white);border:1px solid var(--rule);border-radius:6px;padding:7px 10px;font-size:.78rem;}
+  .rcTitle{font-weight:700;color:var(--accent);margin-bottom:4px;}
+  .rcHeads{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px;}
+  .rcChip{background:var(--selected);border:1px solid var(--rule);border-radius:10px;padding:1px 8px;font-size:.7rem;white-space:nowrap;}
+  .rcRow{display:flex;gap:8px;align-items:stretch;}
+  #pasteBox{flex:1;min-width:0;font:inherit;font-size:.78rem;padding:5px 8px;border:1px solid var(--rule);border-radius:6px;background:var(--paper);color:inherit;resize:vertical;height:30px;min-height:30px;white-space:pre;overflow:auto;}
+  #restoreBtn,#expandAllBtn{font-family:inherit;font-size:.8rem;padding:5px 14px;border-radius:20px;border:1px solid var(--accent-2);background:var(--accent-2);color:var(--white);cursor:pointer;}
+  #restoreStatus{min-height:1em;margin-top:3px;font-size:.72rem;}
+  #restoreStatus.bad{color:var(--wrong-bd);}
+  #restoreStatus.ok{color:var(--correct-bd);}
+  .expandCard{margin:0 0 14px;background:var(--white);border:1px solid var(--rule);border-radius:6px;padding:6px 10px;text-align:center;}
+</style>
+<style>/*pre-line-expl*/[class*="expl"],[id*="expl"]{white-space:pre-line}</style></head>
+<body>
+
+<header id="headerElem" title="Double tap to toggle fullscreen / फुलस्क्रीन चालू/बंद करने के लिए दो बार टैप करें">
+   <center><h1>STET SST Set 1</h1></center>
+   <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="progress-label" id="progressLabel">0 / 100 answered</div>
+  </div>
+  <div class="toolbar">
+    <input type="text" id="searchBox" class="searchBox" placeholder="🔍 Search question (Hindi/English)...">
+    <button id="instaBtn" class="iconbtn" type="button" aria-pressed="false" title="Instant response: show result and explanation as soon as an option is selected">InstaResp</button>
+    <button id="langGlobalBtn" class="iconbtn" type="button" title="Switch all questions' language / सभी प्रश्नों की भाषा बदलें">In English</button>
+    <span class="timerDisplay" id="timerDisplay" title="Time elapsed"><span id="timerText">0:00:00</span></span>
+    <button id="dashboardBtn" class="iconbtn" type="button" title="Question dashboard / प्रश्न डैशबोर्ड">📊</button>
+    <button id="fullscreenBtn" class="iconbtn" type="button" title="Toggle full screen">⛶</button>
+  </div>
+</header>
+
+<section class="thinCard" id="restoreCard">
+  <div class="thinInner">
+    <div class="rcTitle">⟲ Restore previous attempt / पिछला प्रयास पुनः लोड करें</div>
+    <div class="rcHeads" id="rcHeads"></div>
+    <div class="rcRow">
+      <textarea id="pasteBox" rows="1" placeholder="Paste the copied Excel row here (columns in the order shown above) / कॉपी की हुई एक्सेल पंक्ति यहाँ पेस्ट करें"></textarea>
+      <button id="restoreBtn" type="button">Restore</button>
+    </div>
+    <div id="restoreStatus"></div>
+  </div>
+</section>
+
+<main>
+  <div id="retakeBanner"></div>
+  <div id="scorePanel">
+    <div class="scoreLabel">आपका स्कोर / Your Score</div>
+    <div class="scoreNum"><span id="scoreVal">0</span> / 100</div>
+    <div class="scoreLabel" id="scoreSub"></div>
+    <div class="scoreLabel" id="timeTakenLabel" style="margin-top:4px;font-weight:700;"></div>
+    <div class="filterRow">
+      <button id="showAllBtn" class="active">सभी दिखाएं / Show All</button>
+      <button id="showIncorrectBtn">Show Incorrect</button>
+      <button id="showCorrectBtn">Show Correct</button>
+      <button id="retakeBtn">Retake Incorrect</button>
+    </div>
+
+    <div class="exportBox" id="exportBox">
+      <h4>📋 Export Data to Excel for Record / एक्सेल रिकॉर्ड के लिए डेटा</h4>
+      <label for="paperName">Test Paper/Set</label>
+      <input type="text" id="paperName" value="STET SST Set 1">
+      <div class="exportScroll"><table id="exportPreview"></table></div>
+      <label class="chk"><input type="checkbox" id="withHeader"> Include header row (first time only) / हेडर पंक्ति जोड़ें</label>
+      <button id="copyExcelBtn" type="button" disabled>Copy Tab-Separated Data for Excel record</button>
+      <div id="copyStatus"></div>
+    </div>
+  </div>
+
+  <div class="expandCard"><button id="expandAllBtn" type="button">▾ Expand All Explanations</button></div>
+
+  <div id="quizContainer"></div>
+
+  <div class="submitbar">
+    <button id="jumpBtn" type="button">↑ Top</button>
+    <button id="submitBtn" type="button">Submit All Answers</button>
+  </div>
+</main>
+
+<div class="modalOverlay" id="dashboardModal">
+  <div class="modalBox">
+    <h3>प्रश्न डैशबोर्ड / Question Dashboard</h3>
+    <div class="modalLegend">
+      <span><span class="legendDot" style="background:var(--correct-bd)"></span>Attempted / हल किया गया</span>
+      <span><span class="legendDot" style="background:var(--wrong-bd)"></span>Unattempted / अनुत्तरित</span>
+    </div>
+    <div class="dashGrid" id="dashGrid"></div>
+    <button class="modalCloseBtn" id="dashboardCloseBtn" type="button">Close / बंद करें</button>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const DATA = [
+  [
+    ["भारत में \"पंथनिरपेक्षता / धर्मनिरपेक्षता (Secularism)\" की संवैधानिक अवधारणा के संदर्भ में निम्नलिखित में से कौन-सा कथन सही है?", "With reference to the constitutional concept of 'Secularism' in India, which of the following statements is correct?"],
+    [["राज्य और धर्म के बीच पूर्णतः सख्त पृथक्करण (Strict Water-tight Separation) होता है।", "There is a strict water-tight separation between state and religion."], ["राज्य धार्मिक मामलों में किसी भी परिस्थिति में हस्तक्षेप नहीं कर सकता।", "The state cannot interfere in religious matters under any circumstances."], ["राज्य सैद्धांतिक दूरी (Principled Distance) बनाए रखते हुए सामाजिक न्याय व समानता हेतु धार्मिक कुरीतियों में हस्तक्षेप कर सकता है।", "The state can interfere in religious evils for social justice and equality while maintaining a principled distance."], ["राज्य केवल बहुसंख्यक समुदाय के धार्मिक अधिकारों एवं परंपराओं की सुरक्षा के लिए नीतियाँ बनाता है।", "The state makes policies only for the protection of religious rights and traditions of the majority community."]],
+    2,
+    ["भारत में \"पंथनिरपेक्षता / धर्मनिरपेक्षता (Secularism)\" की संवैधानिक अवधारणा के तहत राज्य सैद्धांतिक दूरी (Principled Distance) बनाए रखते हुए सामाजिक न्याय व समानता हेतु धार्मिक कुरीतियों में हस्तक्षेप कर सकता है।\n• भारतीय धर्मनिरपेक्षता पश्चिमी मॉडल (सख्त पृथक्करण) से भिन्न है, जहाँ राज्य और धर्म के बीच 'सैद्धांतिक दूरी' की नीति अपनाई गई है।\n• भारतीय संविधान के तहत राज्य सभी धर्मों को समान आदर (सर्व धर्म समभाव) देता है, लेकिन समाज सुधार (जैसे छुआछूत, सती प्रथा, तीन तलाक आदि) के लिए धार्मिक मामलों में सकारात्मक हस्तक्षेप कर सकता है।\n• 42वें संविधान संशोधन अधिनियम, 1976 द्वारा भारतीय संविधान की प्रस्तावना में 'पंथनिरपेक्ष' (Secular) शब्द स्पष्ट रूप से जोड़ा गया था।\n• संविधान के भाग-III में अनुच्छेद 25 से 28 तक नागरिकों को धार्मिक स्वतंत्रता का मौलिक अधिकार प्रदान किया गया है, जो सार्वजनिक व्यवस्था, नैतिकता और स्वास्थ्य के अधीन है।", "Under the constitutional concept of Secularism in India, the state can interfere in religious malpractices for social justice and equality while maintaining a principled distance.\n• Indian secularism differs from the Western model (strict separation), adopting a policy of 'principled distance' between state and religion.\n• Under the Indian Constitution, the state gives equal respect to all religions (Sarva Dharma Sambhava), but can make positive interventions in religious matters for social reform (such as untouchability, sati, triple talaq, etc.).\n• The word 'Secular' was explicitly added to the Preamble of the Indian Constitution by the 42nd Constitutional Amendment Act, 1976.\n• Articles 25 to 28 in Part III of the Constitution guarantee fundamental rights to freedom of religion, subject to public order, morality and health."]
+  ],
+  [
+    ["मृदा क्षरण रोकने के लिए किस फसल का प्रयोग करना चाहिए?", "Which crop should be used to prevent soil erosion?"],
+    [["बीन (फलीदार फसल)", "Bean (Leguminous crop)"], ["बार्ली (जौ)", "Barley"], ["सोर्घम (ज्वार)", "Sorghum"], ["पैडी (धान)", "Paddy"]],
+    0,
+    ["मृदा क्षरण रोकने के लिए बीन (फलीदार फसल) का प्रयोग करना चाहिए।\n• फसल द्वारा मृदा संरक्षण में बिना जुताई वाली खेती को प्राथमिकता दी जाती है। इसमें हरित खाद वाली खेती को प्रमुखता दी जाती है।\n• बिना जुताई वाली खेती को प्राथमिकता देने का मुख्य कारण है - (i) मृदा अपरदन पर रोक (ii) नमी का संरक्षण (iii) जैविक कार्बन में वृद्धि आदि।\n• हरित खाद या बीन वाली फसल भूमि में नाइट्रोजन का स्थिरीकरण करने में महत्वपूर्ण भूमिका निभाती है।\n• मृदा संरक्षण की तकनीकों में समोच्च जुताई, सीढ़दार खेती, फसल चक्र एवं मेड़बंदी/वनरोपण शामिल हैं।\n• पेडोलॉजी में मृदा का अध्ययन किया जाता है।", "Beans (leguminous crops) should be used to prevent soil erosion.\n• In soil conservation through crops, zero-tillage farming and green manure crops are prioritized.\n• Main reasons for prioritizing zero-tillage: (i) control of soil erosion, (ii) moisture conservation, (iii) increase in organic carbon, etc.\n• Leguminous crops play a crucial role in nitrogen fixation in the soil.\n• Soil conservation techniques include contour ploughing, terrace farming, crop rotation, bunding/afforestation.\n• Pedology is the study of soil."]
+  ],
+  [
+    ["भारत में विकसित प्रथम बौनी धान की किस्म थी-", "The first dwarf paddy variety developed in India was-"],
+    [["आई० आर०-८", "IR-8"], ["जया", "Jaya"], ["पद्मा", "Padma"], ["रत्ना", "Ratna"]],
+    1,
+    ["चावल अनुसंधान निदेशालय द्वारा विकसित की गई भारत की पहली बौनी धान की किस्म \"जया\" थी।\n• चावल अनुसंधान निदेशालय द्वारा जया चावल को 1968 में विकसित किया गया था, इसे 'चमत्कारी चावल' (Miracle Rice) भी कहा जाता है।\n• IR-8 को विश्वस्तर पर चमत्कारी चावल कहा गया। जया भारत में विकसित प्रथम बौनी किस्म थी।\n• भारत दुनिया का सबसे बड़ा चावल निर्यातक भी है। भारत में चावल उत्पादन के प्रमुख राज्य पश्चिम बंगाल, यू०पी०, आंध्र प्रदेश, पंजाब और तमिलनाडु हैं।\n• भारत में चावल की कुछ लोकप्रिय किस्में बासमती, सोना मसूरी, इंद्रायणी, और पलक्कडन मट्टा हैं।", "The first dwarf paddy variety developed in India was 'Jaya'.\n• Jaya rice was developed in 1968 by the Directorate of Rice Research and is also known as 'Miracle Rice' in India.\n• IR-8 was called miracle rice globally; Jaya was the first dwarf variety developed indigenously in India.\n• India is the largest exporter of rice globally. Major rice-producing states in India include West Bengal, UP, Andhra Pradesh, Punjab, and Tamil Nadu."]
+  ],
+  [
+    ["पीली क्रांति का किससे संबंध है?", "Yellow Revolution is related to what?"],
+    [["दालें", "Pulses"], ["तिलहन", "Oilseeds"], ["सूर्यमुखी", "Sunflower"], ["मछली", "Fish"]],
+    1,
+    ["पीली क्रांति भारत में तिलहन के उत्पादन से संबंधित है।\n• भारत में पीली/तिलहन क्रांति की शुरुआत 1986-87 में की गई थी।\n• तिलहन प्रौद्योगिकी मिशन की नींव 1986 में तत्कालीन प्रधानमंत्री राजीव गाँधी द्वारा रखी गई।\n• भारत में पीली क्रांति का जनक सैम पित्रोदा को माना जाता है।\n• प्रमुख क्रांतियाँ: गोल क्रांति (आलू), हरित क्रांति (खाद्यान्न), धूसर क्रांति (उर्वरक), श्वेत क्रांति (दूध), नीली क्रांति (मछली), लाल क्रांति (मांस/टमाटर)।", "Yellow Revolution is related to oilseed production in India.\n• The Yellow Revolution in oilseeds was launched in India in 1986-87.\n• Oilseeds Technology Mission was set up in 1986 under Prime Minister Rajiv Gandhi.\n• Sam Pitroda is considered the father of the Yellow Revolution in India.\n• Major revolutions: Round (Potato), Green (Foodgrains), Grey (Fertilizer), White (Milk), Blue (Fish), Red (Meat/Tomato)."]
+  ],
+  [
+    ["निम्नलिखित में से किस मानव उत्पाद धान्य अन्न (Man-made cereal grain) कहा जाता है?", "Which of the following is known as a man-made cereal grain?"],
+    [["धान", "Paddy"], ["गेहूँ", "Wheat"], ["ट्रिटिकेल", "Triticale"], ["ज्वार", "Sorghum"]],
+    2,
+    ["ट्रिटिकेल (Triticale) को मानव उत्पाद धान्य अन्न (Man-made cereal grain) कहा जाता है।\n• यह गेहूँ (Wheat) और राई (Rye) के संकरण (Hybridization) से बनता है।\n• ट्रिटिकेल में प्रोटीन की मात्रा 11.8% से 22.5% तक होती है, जो आम तौर पर मक्का और गेहूँ से अधिक होती है।\n• यह अमीनो एसिड में भी उच्च है और पशु पोषण के लिए अच्छा है।\n• ट्रिटिकेल में गेहूँ की तुलना में कम ग्लूटेन होता है।", "Triticale is known as a man-made cereal grain.\n• It is developed by crossing wheat and rye.\n• Protein content in Triticale ranges from 11.8% to 22.5%, higher than corn and wheat.\n• It is rich in amino acids and useful for animal feed, containing less gluten than wheat."]
+  ],
+  [
+    ["भारत की संघीय व्यवस्था (Federal System) और बेल्जियम के सत्ता-साझाकरण मॉडल के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\nA. केंद्र और राज्य/प्रांतीय स्तरों पर शक्तियों का संवैधानिक विभाजन।\nB. विभिन्न सामाजिक, भाषाई और सांस्कृतिक समूहों को प्रतिनिधित्व एवं संरक्षण प्रदान करना।\nC. निर्णय लेने की प्रक्रिया में त्रि-स्तरीय/स्थानीय स्वशासन के माध्यम से जनभागीदारी को बढ़ावा देना।\nD. राज्य सरकारों की पूर्ण प्रशासनिक एवं वित्तीय स्वायत्तता को समाप्त करना।\nसही विकल्प का चयन कीजिए:", "Consider the following statements regarding the Federal System of India and the Power-Sharing model of Belgium:\nA. Constitutional division of powers between central and state/provincial levels.\nB. Providing representation and protection to various social, linguistic, and cultural groups.\nC. Promoting public participation through three-tier/local self-government in decision-making.\nD. Abolishing total administrative and financial autonomy of state governments.\nSelect the correct option:"],
+    [["A, B और C", "A, B and C"], ["B, C और D", "B, C and D"], ["A और D", "A and D"], ["A, B, C और D", "A, B, C and D"]],
+    0,
+    ["भारत की संघीय व्यवस्था और बेल्जियम के सत्ता-साझाकरण मॉडल के संदर्भ में कथन A, B और C सही हैं।\n• भारत और बेल्जियम दोनों ने ही अपनी व्यापक विविधता को समायोजित करने के लिए शक्तियों के विकेंद्रीकरण और सत्ता की साझेदारी का लोकतांत्रिक मॉडल अपनाया है।\n• दोनों देशों में केंद्र और राज्य/प्रांतीय स्तरों पर शक्तियों का स्पष्ट संवैधानिक विभाजन किया गया है।\n• भारत में 73वें और 74वें संविधान संशोधन के माध्यम से स्थानीय स्वशासन लागू किया गया, जो बेल्जियम की 'सामुदायिक सरकार' की तरह ही जनभागीदारी को बढ़ावा देता है।\n• किसी भी आदर्श संघीय व्यवस्था में राज्य सरकारों की स्वायत्तता समाप्त नहीं की जाती।", "Regarding India's federal system and Belgium's power-sharing model, statements A, B, and C are correct.\n• Both India and Belgium adopted democratic power-sharing models to accommodate diversity.\n• Clear constitutional division of power exists between central and state/provincial levels.\n• Decentralization via 73rd and 74th Amendments in India mirrors community governance in Belgium.\n• State autonomy is protected, not abolished, in ideal federal systems."]
+  ],
+  [
+    ["समुदायों का पूर्णक्रम जो क्रमशः एक निश्चित स्थान पर बदलता है, कहलाता है-", "The entire sequence of communities that successively changes in a particular area is called-"],
+    [["पारिस्थितिक अनुक्रम", "Ecological succession"], ["सीयर", "Sere"], ["समुदाय गतिकी", "Community dynamics"], ["जैवभार का पिरामिड", "Pyramid of biomass"]],
+    1,
+    ["समुदायों का एक पूर्ण क्रम जो क्रमशः एक निश्चित स्थान पर बदलता है सीयर (क्रमक) कहलाता है।\n• जब किसी खाली या नष्ट हो चुके स्थान पर पौधे और जीव-जंतु धीरे-धीरे एक निश्चित क्रम में बसना शुरू करते हैं, तो इस पूरी प्रक्रिया को अनुक्रमण (Succession) कहते हैं।\n• इसी अनुक्रम विकास को क्रमक या सीयर (Sere) या प्राथमिक क्रमक (Primary Sere) कहा जाता है।\n• यदि प्राथमिक क्रमक की उत्पत्ति ऐसे आवास क्षेत्र में होती है जो इसके पहले जैविक जीव रूपों से खाली था तो उपर्युक्त क्रमक, द्वितीयक क्रमक (Secondary Sere) कहलाता है।", "The entire sequence of communities that successively changes in a given area is called a Sere.\n• Ecological succession refers to the gradual process by which ecosystems change and develop over time.\n• Sere represents the series of developmental stages of a biotic community from pioneer to climax.\n• Secondary seres develop in areas where natural vegetation has been destroyed."]
+  ],
+  [
+    ["एक बाज, एक सर्प को, एक सर्प, एक मेंढक को, एक मेंढक टिड्डे को खाते हैं और टिड्डा घास खाता है। इस खाद्य श्रृंखला में बाज है-", "A hawk eats a snake, a snake eats a frog, a frog eats a grasshopper, and the grasshopper eats grass. In this food chain, the hawk is a-"],
+    [["प्राथमिक उत्पादक", "Primary producer"], ["प्राथमिक उपभोक्ता", "Primary consumer"], ["तृतीयक उपभोक्ता", "Tertiary consumer"], ["चतुर्थ उपभोक्ता", "Quaternary consumer"]],
+    3,
+    ["दी गई खाद्य श्रृंखला में बाज चतुर्थ उपभोक्ता (Quaternary Consumer) है।\n• खाद्य श्रृंखला का क्रम: घास (प्राथमिक उत्पादक) → टिड्डा (प्राथमिक उपभोक्ता) → मेंढक (द्वितीयक उपभोक्ता) → सर्प (तृतीयक उपभोक्ता) → बाज (चतुर्थ उपभोक्ता)।\n• प्राथमिक उत्पादक सूर्य के प्रकाश से भोजन बनाते हैं।\n• चतुर्थ उपभोक्ता सर्वोच्च मांसाहारी (Top Carnivore) की श्रेणी में आते हैं।", "In this food chain, the hawk is a quaternary consumer.\n• Chain sequence: Grass (Producer) → Grasshopper (Primary Consumer) → Frog (Secondary Consumer) → Snake (Tertiary Consumer) → Hawk (Quaternary Consumer).\n• Quaternary consumers represent apex predators at the top trophic level."]
+  ],
+  [
+    ["प्रधानमंत्री उज्ज्वला योजना कब प्रारंभ की गई?", "When was the Pradhan Mantri Ujjwala Yojana launched?"],
+    [["1 मई 2015", "1 May 2015"], ["1 मई 2016", "1 May 2016"], ["1 मई 2014", "1 May 2014"], ["1 मई 2017", "1 May 2017"]],
+    1,
+    ["प्रधानमंत्री उज्ज्वला योजना 1 मई 2016 को प्रारंभ की गई।\n• 1 मई, 2016 को 'स्वच्छ ईंधन, बेहतर जीवन' नारे के साथ केंद्र सरकार द्वारा प्रधानमंत्री उज्ज्वला योजना की शुरुआत बलिया (उत्तर प्रदेश) से की गई।\n• इस योजना का मुख्य उद्देश्य BPL परिवारों की महिलाओं को मुफ्त में LPG कनेक्शन प्रदान करना था।\n• प्रधानमंत्री उज्ज्वला योजना 2.0 की शुरुआत 10 अगस्त 2021 को महोबा (UP) से की गई थी।", "Pradhan Mantri Ujjwala Yojana was launched on May 1, 2016.\n• Slogan: 'Swachh Indhan, Behtar Jeevan', launched from Ballia, UP.\n• Objective: Providing free LPG connections to women belonging to BPL households.\n• Ujjwala 2.0 was launched on August 10, 2021, from Mahoba, UP."]
+  ],
+  [
+    ["डॉ० वर्गीज कुरियन का संबंध किससे है?", "Dr. Verghese Kurien is associated with-"],
+    [["हरित क्रांति", "Green Revolution"], ["गुलाबी क्रांति", "Pink Revolution"], ["पीली क्रांति", "Yellow Revolution"], ["श्वेत क्रांति", "White Revolution"]],
+    3,
+    ["डॉ. वर्गीज कुरियन का संबंध श्वेत क्रांति (White Revolution / Operation Flood) से है।\n• डॉ. वर्गीज कुरियन को भारत में 'श्वेत क्रांति का जनक' और 'मिल्कमैन ऑफ इंडिया' कहा जाता है।\n• उनके जन्म दिवस (26 नवम्बर) पर राष्ट्रीय दुग्ध दिवस (National Milk Day) मनाया जाता है।\n• श्वेत क्रांति / ऑपरेशन फ्लड की शुरुआत 1970 ई. में हुई थी, जिससे भारत विश्व का सबसे बड़ा दूध उत्पादक देश बना।", "Dr. Verghese Kurien is known as the Father of the White Revolution in India.\n• Operation Flood was launched in 1970 to increase milk production.\n• National Milk Day is celebrated on his birth anniversary (November 26).\n• India became the world's largest milk producer due to this revolution."]
+  ],
+  [
+    ["'लैंगिक समानता और विविधता (Gender Equality & Diversity)' विषय पर कक्षा लेते समय, विद्यार्थियों में सामाजिक जागरुकता और आलोचनात्मक विचार कौशल (Critical Thinking) विकसित करने के लिए निम्नलिखित में से किस प्रश्न को पूछा जाना सबसे उपयुक्त होगा?", "While teaching 'Gender Equality & Diversity', which question would be most appropriate to develop social awareness and critical thinking in students?"],
+    [["भारत के संविधान का कौन-सा अनुच्छेद लिंग के आधार पर भेदभाव का निषेध करता है?", "Which article of the Indian Constitution prohibits discrimination based on gender?"], ["महिला सशक्तिकरण हेतु सरकार द्वारा चलाई जा रही किन्हीं तीन योजनाओं के नाम सूचीबद्ध कीजिए।", "List the names of any three schemes run by the government for women empowerment."], ["\"घरेलू श्रम का असमान विभाजन और अवैतनिक कार्य (Unpaid Care Work) महिलाओं की सामाजिक-आर्थिक स्थिति को किस प्रकार प्रभावित करता है?\" उदाहरण सहित विश्लेषण कीजिए।", "\"How does the unequal division of domestic labor and unpaid care work affect women's socio-economic status?\" Analyze with examples."], ["भारत में प्रथम महिला प्रधानमंत्री कौन थीं और उनका कार्यकाल कितना था?", "Who was the first female Prime Minister of India and what was her tenure?"]],
+    2,
+    ["विद्यार्थियों में सामाजिक जागरूकता और आलोचनात्मक विचार कौशल विकसित करने के लिए विकल्प (C) का प्रश्न पूछा जाना सबसे उपयुक्त होगा।\n• आलोचनात्मक चिंतन (Critical Thinking) विकसित करने के लिए मुक्त अंत वाले (Open-ended) विश्लेषणात्मक प्रश्न सबसे प्रभावी होते हैं।\n• यह प्रश्न छात्रों को समाज में व्याप्त लैंगिक रूढ़िवाद, महिलाओं के अवैतनिक श्रम (Unpaid care work) और उसके वास्तविक आर्थिक प्रभावों का गहराई से मूल्यांकन करने के लिए प्रेरित करता है।\n• यह प्रश्न विद्यार्थियों को उनके वास्तविक जीवन से जोड़कर विषय की व्यावहारिक समझ विकसित करने में मदद करता है।", "Open-ended analytical questions best foster critical thinking skills in social science.\n• Question (C) prompts students to critically reflect on unpaid care work, gender roles, and economic status rather than recalling rote facts.\n• Connects classroom learning with real-life societal challenges."]
+  ],
+  [
+    ["किस अर्थशास्त्री ने भारत में सबसे पहले वैज्ञानिक दृष्टि से राष्ट्रीय आय की गणना की?", "Which economist first calculated national income in India from a scientific perspective?"],
+    [["डी०आर० गाडगिल", "D.R. Gadgil"], ["वी०के०आर०वी० राव", "V.K.R.V. Rao"], ["मनमोहन सिंह", "Manmohan Singh"], ["पी०सी० महालनोविस", "P.C. Mahalanobis"]],
+    1,
+    ["डॉ. वी.के.आर.वी. राव ने सबसे पहले वैज्ञानिक दृष्टि से भारत में राष्ट्रीय आय की गणना की।\n• वी.के.आर.वी. राव ने 1931-32 में भारत की राष्ट्रीय आय की गणना वैज्ञानिक पद्धति पर की थी। उनकी पुस्तक का नाम 'द नेशनल इनकम ऑफ ब्रिटिश इण्डिया' (1938) था।\n• भारत में सबसे पहले राष्ट्रीय आय का अनुमान 1868 में दादाभाई नौरोजी ने लगाया था (₹20 प्रति व्यक्ति आय)।\n• आजादी के बाद 1949 में बनी राष्ट्रीय आय समिति के अध्यक्ष पी.सी. महालनोबिस थे।", "Dr. V.K.R.V. Rao was the first to estimate national income scientifically in India for 1931-32.\n• Authored 'The National Income of British India' (1938).\n• Dadabhai Naoroji made the first informal estimation of national income in 1868 (₹20 per capita).\n• P.C. Mahalanobis headed the National Income Committee in 1949."]
+  ],
+  [
+    ["'हम्पी विद चेरिऑट' भारतीय मुद्रा के किस मूल वर्ग के पृष्ठ भाग पर अंकित है?", "'Hampi with Chariot' is printed on the reverse side of which denomination of Indian currency?"],
+    [["10 रुपये", "10 Rupees"], ["100 रुपये", "100 Rupees"], ["500 रुपये", "500 Rupees"], ["50 रुपये", "50 Rupees"]],
+    3,
+    ["'हम्पी विद चेरिऑट' भारतीय मुद्रा के 50 रुपये के नोट के पृष्ठ भाग पर अंकित है।\n• अन्य नोटों पर अंकित चित्र:\n - ₹10: कोणार्क का सूर्य मंदिर (ओडिशा)\n - ₹20: एलोरा की गुफाएँ (महाराष्ट्र)\n - ₹50: हम्पी का रथ (कर्नाटक)\n - ₹100: रानी की वाव (गुजरात)\n - ₹200: साँची का स्तूप (मध्य प्रदेश)\n - ₹500: लाल किला (दिल्ली)", "'Hampi with Chariot' is featured on the ₹50 currency note.\n• Other notes: ₹10 (Sun Temple, Konark), ₹20 (Ellora Caves), ₹100 (Rani ki Vav), ₹200 (Sanchi Stupa), ₹500 (Red Fort)."]
+  ],
+  [
+    ["आत्मनिर्भरता के क्षेत्र में भारत में कई क्रांतियाँ हुई हैं। गुलाबी क्रांति का संबंध निम्न में से किससे है?", "There have been many revolutions in India towards self-reliance. Pink Revolution is associated with which of the following?"],
+    [["दूग्ध उत्पादन", "Milk production"], ["अण्डा उत्पादन", "Egg production"], ["टमाटर उत्पादन", "Tomato production"], ["झींगा उत्पादन", "Prawn production"]],
+    3,
+    ["गुलाबी क्रांति (Pink Revolution) का संबंध झींगा मछली (Prawn) उत्पादन, प्याज उत्पादन और औषधि निर्माण से है।\n• अन्य क्रांतियाँ: दुग्ध (श्वेत), अण्डा (रजत/Silver), टमाटर/मांस (लाल), फल/शहद (स्वर्ण)।", "Pink Revolution is related to prawn/shrimp production, onion production, and pharmaceuticals.\n• Other revolutions: Milk (White), Egg (Silver), Tomato/Meat (Red), Fruits/Honey (Golden)."]
+  ],
+  [
+    ["ग्रीष्म ऋतु में स्थलीय स्थानीय हवाएँ बंगाल की खाड़ी से उत्तर और पश्चिम की ओर चल पड़ती है, इसे हम क्या कहते हैं?", "In summer, local land winds move north and west from the Bay of Bengal; what do we call this?"],
+    [["क्यूराइल", "Kuril"], ["कालबैशाखी", "Kalbaishakhi"], ["ऑरेन्ज स्प्रे", "Orange Spray"], ["हम्बोल्ट", "Humboldt"]],
+    1,
+    ["ग्रीष्म ऋतु में चलने वाली इन स्थानीय हवाओं को कालबैशाखी (Kalbaishakhi) कहा जाता है।\n• कालबैशाखी / नॉर्वेस्टर्स पश्चिम बंगाल और असम में चलने वाली विनाशकारी चक्रवाती वर्षा और हवाएँ हैं। असम में इन्हें 'बोडोइचिला' (Bordoisila) कहा जाता है।\n• यह चाय, जूट और चावल की खेती के लिए लाभदायक होती हैं।\n• दक्षिण भारत में प्री-मानसून वर्षा को 'चेरी ब्लॉसम' (कॉफी वर्षा) और 'आम्र वर्षा' (Mango Showers) कहा जाता है।", "Kalbaishakhi (Nor'westers) are localized rainfall thunderstorms in Bengal and Assam during pre-monsoon summer.\n• Known as Bordoisila in Assam.\n• Beneficial for tea, jute, and rice crops."]
+  ],
+  [
+    ["भारत की सबसे तेज गति से चलने वाली ट्रेन गतिमान एक्सप्रेस किस वर्ष चलाई गई?", "In which year was Gatimaan Express, India's fast-running train, launched?"],
+    [["2019", "2019"], ["2016", "2016"], ["2017", "2017"], ["2018", "2018"]],
+    1,
+    ["गतिमान एक्सप्रेस वर्ष 2016 (5 अप्रैल 2016) में दिल्ली (हज़रत निज़ामुद्दीन) और आगरा के बीच चलाई गई थी।\n• वर्तमान में भारत की सबसे तेज़ गति वाली ट्रेन 'वंदे भारत एक्सप्रेस' (ट्रेन 18) है, जिसे 15 फरवरी 2019 को दिल्ली से वाराणसी के बीच शुरू किया गया था।", "Gatimaan Express was launched on April 5, 2016 between Delhi and Agra.\n• Vande Bharat Express (Train 18) is currently India's fastest train service, inaugurated in Feb 2019."]
+  ],
+  [
+    ["मूल्यांकन संबंधी निम्नलिखित प्रश्न पर विचार कीजिए:\n'लोकतंत्र में स्वतंत्र और निष्पक्ष चुनाव (Free and Fair Elections) क्यों आवश्यक हैं?'\nनिम्नलिखित में से कौन-सा उत्तर यह दर्शाता है कि विद्यार्थी ने अवधारणा को समझा नहीं है?", "Consider the following assessment question:\n'Why are Free and Fair Elections necessary in a democracy?'\nWhich response indicates that the student has NOT understood the concept?"],
+    [["विद्यार्थी A : स्वतंत्र और निष्पक्ष चुनाव नागरिकों को बिना किसी भय के अपनी इच्छा से सरकार चुनने का अवसर देते हैं।", "Student A: Free and fair elections allow citizens to choose a government of their choice without fear."], ["विद्यार्थी B : निष्पक्ष चुनाव केवल सत्तारूढ़ दल को स्थायी रूप से सत्ता में बनाए रखने का एक औपचारिक माध्यम हैं।", "Student B: Fair elections are merely a formal means to keep the ruling party permanently in power."], ["विद्यार्थी C : यह प्रक्रिया जनप्रतिनिधियों की जन-जवाबदेही और लोकतंत्र की वैधता को सुनिश्चित करती है।", "Student C: This process ensures public accountability of representatives and democratic legitimacy."], ["विद्यार्थी D: निष्पक्ष चुनाव सत्ता के दुरुपयोग पर अंकुश लगाते हैं और शांतिपूर्ण सत्ता परिवर्तन को संभव बनाते हैं।", "Student D: Fair elections curb abuse of power and enable peaceful transfer of power."]],
+    1,
+    ["विद्यार्थी B का उत्तर दर्शाता है कि उसने अवधारणा को समझा नहीं है।\n• स्वतंत्र और निष्पक्ष चुनाव किसी एक दल को स्थायी रूप से सत्ता में बनाए रखने के लिए नहीं, बल्कि जनता द्वारा सरकार को बदलने का वास्तविक विकल्प प्रदान करने के लिए होते हैं।\n• भारत के संविधान के अनुच्छेद 324 में स्वतंत्र चुनाव कराने हेतु 'भारत निर्वाचन आयोग' का प्रावधान है।", "Student B's answer reflects a complete misconception of democracy.\n• Democratic elections provide genuine opportunities to change the ruling party, ensuring public accountability and rule of law."]
+  ],
+  [
+    ["कैमूर पठार किस लिए प्रसिद्ध है?", "What is Kaimur Plateau famous for?"],
+    [["ताँबा", "Copper"], ["चूना पत्थर", "Limestone"], ["लिथियम", "Lithium"], ["बॉक्साइट", "Bauxite"]],
+    1,
+    ["कैमूर पठार चूना पत्थर (Limestone) के लिए प्रसिद्ध है।\n• कैमूर और रोहतास क्षेत्र विंध्य क्रम की चट्टानों से बने हैं, जहाँ चूना पत्थर और पायराइट प्रचुर मात्रा में मिलते हैं।\n• बिहार में बॉक्साइट मुंगेर/जमुई में और अभ्रक गया/नवादा/मुंगेर में पाया जाता है।\n• रोहतास का अमझोर पायराइट उत्पादन के लिए प्रसिद्ध है।", "Kaimur Plateau is famous for limestone deposits belonging to the Vindhyan rock system.\n• Amjhore in Rohtas is famous for pyrites.\n• Bauxite is found in Munger and Jamui districts."]
+  ],
+  [
+    ["प्रतिनिधि भिन्न एक मापक है जो निम्न में से किस उद्देश्य के लिए उपयोग में लाया जाता है?", "Representative Fraction (R.F.) is a scale used for which of the following purposes?"],
+    [["वाणिज्य प्रबंधन", "Commerce management"], ["क्षेत्र निर्धारण", "Area determination"], ["आयतन निर्धारण", "Volume determination"], ["मानचित्र निर्धारण", "Map determination/scaling"]],
+    3,
+    ["प्रतिनिधि भिन्न (Representative Fraction / R.F.) मानचित्र निर्धारण (Map Scaling) के उद्देश्य के लिए उपयोग में लाया जाता है।\n• R.F. मानचित्र की दूरी और धरातल की वास्तविक दूरी के अनुपात को दर्शाता है।\n• इसका अंश (Numerator) हमेशा 1 होता है (जैसे 1:50,000)। यह किसी विशिष्ट इकाई (सेंटीमीटर या इंच) से स्वतंत्र होता है।", "Representative Fraction (R.F.) is used in map scaling and cartography.\n• It expresses the ratio of distance on the map to real distance on the ground, with a numerator of 1."]
+  ],
+  [
+    ["भारत के जननांकिकीय इतिहास में महान विभाजक की संज्ञा किस वर्ष को दी गई है?", "Which year is called the 'Great Divide' in the demographic history of India?"],
+    [["1911", "1911"], ["1921", "1921"], ["1872", "1872"], ["1881", "1881"]],
+    1,
+    ["वर्ष 1921 को भारत के जननांकिकीय इतिहास में 'महान विभाजक वर्ष' (Year of Great Divide) कहा जाता है।\n• 1911 से 1921 के दशक में महामारी (स्पेनिश फ्लू), अकाल और अस्वास्थ्यकर परिस्थितियों के कारण भारत की जनसंख्या वृद्धि दर ऋणात्मक (-0.31%) दर्ज की गई थी।\n• 1921 के बाद से भारत की जनसंख्या में निरंतर तीव्र वृद्धि हुई है।\n• प्रथम जनगणना 1872 (लॉर्ड मेयो) और प्रथम नियमित जनगणना 1881 (लॉर्ड रिपन) में हुई थी। 1951 को 'लघु विभाजक वर्ष' कहा जाता है।", "1921 is known as the 'Great Divide' year in Indian demographics.\n• Between 1911-1921, India recorded a negative population growth rate (-0.31%) due to famines and Spanish flu.\n• First census took place in 1872 (Lord Mayo); regular censuses began in 1881 (Lord Ripon)."]
+  ],
+  [
+    ["निम्न में संस्थागत वित्त का साधन कौन है?", "Which of the following is a source of institutional finance?"],
+    [["महाजन", "Money lender (Mahajan)"], ["व्यावसायिक बैंक", "Commercial Bank"], ["साहूकार", "Pawn broker (Sahukar)"], ["व्यापारी", "Traders"]],
+    1,
+    ["व्यावसायिक बैंक (Commercial Bank) संस्थागत वित्त (Institutional Finance) का साधन है।\n• वित्त के दो मुख्य स्रोत होते हैं: संस्थागत (बैंक, सहकारी समितियाँ, RRB) और गैर-संस्थागत (साहूकार, महाजन, व्यापारी, रिश्तेदार)।\n• संस्थागत स्रोत उचित ब्याज दर और पारदर्शी शर्तों पर ऋण प्रदान करते हैं।", "Commercial Banks are formal institutional financial sources.\n• Non-institutional sources (Mahajans, Sahukars) charge high interest rates and operate informally."]
+  ],
+  [
+    ["माइक्रो फाइनेंसिंग की अवधारणा प्रस्तुत करने वाले निम्न में से कौन थे?", "Who among the following presented the concept of Microfinancing?"],
+    [["अमर्त्य सेन", "Amartya Sen"], ["मो० युनूस", "Muhammad Yunus"], ["अभिजीत बनर्जी", "Abhijit Banerjee"], ["माइकल मेयर", "Michael Meyer"]],
+    1,
+    ["माइक्रो फाइनेंसिंग (सूक्ष्म वित्त) की अवधारणा प्रोफेसर मोहम्मद यूनुस ने प्रस्तुत की थी।\n• मोहम्मद यूनुस बांग्लादेश के अर्थशास्त्री और 'ग्रामीण बैंक' के संस्थापक हैं।\n• उन्हें 2006 में नोबेल शांति पुरस्कार से सम्मानित किया गया था।\n• भारत में सूक्ष्म वित्त के जनक विजय महाजन को माना जाता है।", "Muhammad Yunus introduced microfinance and founded Grameen Bank in Bangladesh.\n• Awarded the Nobel Peace Prize in 2006."]
+  ],
+  [
+    ["विश्व उपभोक्ता अधिकार दिवस मनाया जाता है?", "When is World Consumer Rights Day celebrated?"],
+    [["10 अक्टूबर", "10 October"], ["15 मार्च", "15 March"], ["7 मई", "7 May"], ["23 जनवरी", "23 January"]],
+    1,
+    ["विश्व उपभोक्ता अधिकार दिवस 15 मार्च को मनाया जाता है।\n• अमेरिकी राष्ट्रपति जे.एफ. कैनेडी द्वारा 15 मार्च 1962 को अमेरिकी कांग्रेस में दिए गए भाषण की याद में यह दिवस मनाया जाता है।\n• भारत में 'राष्ट्रीय उपभोक्ता अधिकार दिवस' 24 दिसम्बर को मनाया जाता है।\n• 23 जनवरी को 'पराक्रम दिवस' (सुभाष चंद्र बोस जयंती) मनाया जाता है।", "World Consumer Rights Day is celebrated on March 15.\n• National Consumer Day in India is celebrated on December 24."]
+  ],
+  [
+    ["गरीबी के माप की कौन-सी सामान्य विधि प्रयोग में लाई जाती है?", "Which common method is used to measure poverty?"],
+    [["आय", "Income"], ["व्यय", "Expenditure"], ["आय एवं व्यय दोनों", "Both Income and Expenditure"], ["इनमें से कोई नहीं", "None of these"]],
+    2,
+    ["गरीबी के माप के लिए आय एवं व्यय (उपभोग व्यय) दोनों सामान्य विधियों का प्रयोग किया जाता है।\n• भारत में नीति आयोग (पूर्व में योजना आयोग) मुख्य रूप से 'न्यूनतम उपभोग व्यय' (Consumption Expenditure) के आधार पर गरीबी रेखा का निर्धारण करता रहा है।\n• बहुआयामी गरीबी सूचकांक (MPI) स्वास्थ्य, शिक्षा और जीवन स्तर के 12 संकेतकों पर आधारित होता है।", "Poverty estimation uses both income and consumption expenditure methods.\n• In India, consumption expenditure has traditionally been the primary metric."]
+  ],
+  [
+    ["एक सक्रिय और समावेशी सामाजिक विज्ञान की कक्षा अधिगमकर्ताओं को प्रेरित करती है-", "An active and inclusive social science classroom motivates learners to-"],
+    [["चर्चाओं और परिचर्चाओं को न्यूनतम रखने के लिए।", "Keep discussions and debates to a minimum."], ["केवल पाठ्य-पुस्तक में दी गई सामग्री को रटने पर ध्यान केंद्रित करने के लिए।", "Focus solely on memorizing textbook content."], ["वास्तविक जीवन के मुद्दों, विविधता, और सामाजिक चुनौतियों पर खोजबीन व प्रोजेक्ट कार्य में भागीदार बनने के लिए।", "Engage in research and project work on real-life issues, diversity, and social challenges."], ["शिक्षक के एकतरफा व्याख्यान को निष्क्रिय रूप से सुनने और नोट्स बनाने के लिए।", "Passively listen to the teacher's lecture and take notes."]],
+    2,
+    ["एक समावेशी और सक्रिय कक्षा विद्यार्थियों को वास्तविक जीवन के मुद्दों, सामाजिक चुनौतियों और खोजबीन में भागीदार बनने हेतु प्रेरित करती है।\n• NCF 2005 के अनुसार, शिक्षण को रटने के बजाय व्यावहारिक अनुभव, विविधता के प्रति सम्मान और परियोजना कार्यों से जोड़ा जाना चाहिए।", "Inclusive classrooms promote active learning, critical inquiry, and connections to real-world issues per NCF guidelines."]
+  ],
+  [
+    ["IRDA बीमा क्षेत्र की नियामक संस्था है। इसका मुख्यालय कहाँ है?", "IRDA is the regulatory body for the insurance sector. Where is its headquarters located?"],
+    [["लखनऊ", "Lucknow"], ["नई दिल्ली", "New Delhi"], ["मुंबई", "Mumbai"], ["हैदराबाद", "Hyderabad"]],
+    3,
+    ["IRDAI (भारतीय बीमा विनियामक और विकास प्राधिकरण) का मुख्यालय हैदराबाद में स्थित है।\n• इसकी स्थापना 1999 में आर.एन. मल्होत्रा समिति की सिफारिशों के आधार पर एक वैधानिक निकाय के रूप में की गई थी।", "IRDAI headquarters is in Hyderabad, Telangana.\n• Established under IRDA Act, 1999 following Malhotra Committee recommendations."]
+  ],
+  [
+    ["निम्न में से कौन देश है जहाँ कम प्राकृतिक संसाधनों के बावजूद मानव संसाधन प्रचुर मात्रा में है?", "Which country has abundant human resources despite scarce natural resources?"],
+    [["भारत", "India"], ["नेपाल", "Nepal"], ["जापान", "Japan"], ["श्रीलंका", "Sri Lanka"]],
+    2,
+    ["जापान एक ऐसा देश है जहाँ प्राकृतिक संसाधनों की कमी के बावजूद मानव संसाधन (शिक्षा, स्वास्थ्य, कौशल) में निवेश के बल पर उच्च विकास हासिल किया गया है।\n• 1868 की मेईजी पुनर्स्थापना के बाद जापान ने मानव पूंजी के कुशल प्रबंधन से आर्थिक उन्नति की।", "Japan transformed its economy through human resource development despite lacking mineral and natural resources."]
+  ],
+  [
+    ["गरीबी का क्या अर्थ है?", "What is the meaning of poverty?"],
+    [["बौद्धिक कमी", "Intellectual deficiency"], ["स्वास्थ्य की कमी", "Lack of health"], ["आय की कमी", "Lack of income / Basic needs"], ["सभी लेकिन कुछ और भी", "All but something more"]],
+    2,
+    ["सामान्य आर्थिक अर्थों में गरीबी का अभिप्राय आय की कमी अथवा जीवन जीने की न्यूनतम मूलभूत आवश्यकताओं (भोजन, वस्त्र, आवास) के अभाव से है।", "Poverty is primarily defined as the lack of income/resources to satisfy basic needs."]
+  ],
+  [
+    ["भारतीय संविधान नागरिकों को कितने प्रकार के मौलिक अधिकार प्रदान करता है?", "How many types of Fundamental Rights does the Indian Constitution grant to citizens?"],
+    [["आठ", "Eight"], ["सात", "Seven"], ["छह", "Six"], ["पाँच", "Five"]],
+    2,
+    ["भारतीय संविधान नागरिकों को छह (6) मौलिक अधिकार प्रदान करता है।\n• मूल संविधान में 7 मौलिक अधिकार थे।\n• 44वें संविधान संशोधन अधिनियम 1978 द्वारा संपत्ति के अधिकार (अनुच्छेद 31) को मौलिक अधिकारों से हटाकर अनुच्छेद 300A के तहत एक कानूनी अधिकार बना दिया गया।", "The Indian Constitution currently provides 6 Fundamental Rights.\n• The Right to Property was removed from fundamental rights by the 44th Amendment Act, 1978."]
+  ],
+  [
+    ["राज्य और केन्द्र के बीच सत्ता विभाजन के लिए संविधान की सूची नहीं है?", "Which of the following is NOT a list in the Constitution for division of power between State and Centre?"],
+    [["परवर्ती सूची", "Subsequent list (Paravarti List)"], ["संघ सूची", "Union List"], ["राज्य सूची", "State List"], ["समवर्ती सूची", "Concurrent List"]],
+    0,
+    ["'परवर्ती सूची' संविधान की अनुसूची में शामिल नहीं है।\n• संविधान की 7वीं अनुसूची में केंद्र और राज्यों के बीच शक्तियों के बंटवारे के लिए 3 सूचियाँ हैं:\n 1. संघ सूची (Union List)\n 2. राज्य सूची (State List)\n 3. समवर्ती सूची (Concurrent List)", "The 7th Schedule contains 3 lists: Union List, State List, and Concurrent List. 'Paravarti List' does not exist."]
+  ],
+  [
+    ["संपत्ति के अधिकार को मौलिक अधिकारों की सूची से कब हटाया गया?", "When was the Right to Property removed from the list of Fundamental Rights?"],
+    [["1976 में", "In 1976"], ["1978 में", "In 1978"], ["1971 में", "In 1971"], ["1977 में", "In 1977"]],
+    1,
+    ["संपत्ति के अधिकार को 44वें संविधान संशोधन अधिनियम 1978 द्वारा मौलिक अधिकारों की सूची से हटाया गया था।\n• इसे अब संविधान के भाग XII के अनुच्छेद 300(A) में कानूनी अधिकार के रूप में रखा गया है। उस समय मोरारजी देसाई प्रधानमंत्री थे।", "Removed by the 44th Constitutional Amendment Act, 1978 under Morarji Desai's government and made a legal right under Article 300A."]
+  ],
+  [
+    ["चिपको आन्दोलन किस राज्य से संबंधित है?", "Chipko Movement is associated with which state?"],
+    [["उत्तराखंड", "Uttarakhand"], ["पश्चिम बंगाल", "West Bengal"], ["सिक्किम", "Sikkim"], ["तमिलनाडु", "Tamil Nadu"]],
+    0,
+    ["चिपको आंदोलन उत्तराखंड (तत्कालीन उत्तर प्रदेश के चमोली जिले) से संबंधित है।\n• यह 1973 में पेड़ों की कटाई रोकने के लिए शुरू किया गया प्रसिद्ध वन संरक्षण आंदोलन था।\n• प्रमुख नेता: सुंदरलाल बहुगुणा, चंडी प्रसाद भट्ट, और गौरा देवी।", "Chipko Movement started in 1973 in Chamoli district, Uttarakhand.\n• Key leaders: Sunderlal Bahuguna, Chandi Prasad Bhatt, and Gaura Devi."]
+  ],
+  [
+    ["दिए गए कथनों A और B को पढ़िए और सही उत्तर का चयन कीजिए:\nA. सामाजिक विज्ञान की कक्षा में प्राथमिक स्रोतों (Primary Sources) का उपयोग विद्यार्थियों में ऐतिहासिक साक्ष्यों का विश्लेषण करने और समालोचनात्मक चिंतन विकसित करने में मदद करता है।\nB. प्राथमिक स्रोत केवल निर्विवाद और पूर्णतः निष्पक्ष तथ्य प्रस्तुत करते हैं, इसलिए इनका आलोचनात्मक परीक्षण करने की आवश्यकता नहीं होती।", "Read statements A and B and choose the correct answer:\nA. Using primary sources in social science classrooms helps students analyze historical evidence and develop critical thinking.\nB. Primary sources present undisputed and completely unbiased facts, so they do not require critical examination."],
+    [["A सत्य है और B असत्य है।", "A is true and B is false."], ["A असत्य है और B सत्य है।", "A is false and B is true."], ["A और B दोनों सत्य हैं।", "Both A and B are true."], ["A और B दोनों असत्य हैं।", "Both A and B are false."]],
+    0,
+    ["कथन A सत्य है लेकिन B असत्य है।\n• प्राथमिक स्रोत (डायरी, पत्र, अभिलेख) महत्वपूर्ण साक्ष्य प्रदान करते हैं, लेकिन उनमें लेखक का पूर्वाग्रह (Bias) हो सकता है, इसलिए उनका आलोचनात्मक विश्लेषण (Critical Analysis) करना अनिवार्य होता है।", "Statement A is correct; Statement B is incorrect because primary sources are not inherently unbiased and require critical evaluation."]
+  ],
+  [
+    ["निम्नलिखित में से संविधान सभा की संघ संविधान समिति (Union Constitution Committee) का अध्यक्ष कौन था?", "Who among the following was the Chairman of the Union Constitution Committee of the Constituent Assembly?"],
+    [["बी.आर. अम्बेडकर", "B.R. Ambedkar"], ["जे.बी. कृपलानी", "J.B. Kripalani"], ["जवाहरलाल नेहरू", "Jawaharlal Nehru"], ["अल्लादि कृष्णास्वामी अय्यर", "Alladi Krishnaswamy Ayyar"]],
+    2,
+    ["संघ संविधान समिति (Union Constitution Committee) के अध्यक्ष पंडित जवाहरलाल नेहरू थे।\n• अन्य प्रमुख समितियाँ:\n - प्रारूप समिति (Drafting Committee): डॉ. बी.आर. अम्बेडकर\n - प्रांतीय संविधान समिति: सरदार वल्लभभाई पटेल\n - झंडा समिति: डॉ. राजेंद्र प्रसाद", "Jawaharlal Nehru chaired the Union Constitution Committee and Union Powers Committee.\n• Dr. B.R. Ambedkar chaired the Drafting Committee."]
+  ],
+  [
+    ["भारत का राष्ट्रीय जलीय जीव कौन है?", "Which is the National Aquatic Animal of India?"],
+    [["मगरमच्छ", "Crocodile"], ["घड़ियाल", "Gharial"], ["जलघोड़ा", "Seahorse"], ["डॉल्फिन", "Gangetic Dolphin"]],
+    3,
+    ["गंगेय डॉल्फिन (Platanista gangetica) को भारत का राष्ट्रीय जलीय जीव घोषित किया गया है।\n• इसे 5 अक्टूबर 2009 को राष्ट्रीय जलीय जीव घोषित किया गया था।", "Gangetic River Dolphin was declared the National Aquatic Animal of India on October 5, 2009."]
+  ],
+  [
+    ["'जातीय संसद' किस देश के संसद का नाम है?", "'Jatiya Sangsad' is the name of the parliament of which country?"],
+    [["नेपाल", "Nepal"], ["बांग्लादेश", "Bangladesh"], ["कम्बोडिया", "Cambodia"], ["मॉरिशस", "Mauritius"]],
+    1,
+    ["'जातीय संसद' बांग्लादेश की संसद का नाम है।\n• अन्य देश: नेपाल (संघीय संसद/राष्ट्रीय पंचायत), म्यांमार (प्यिदांगसु ह्लुत्तव), अफगानिस्तान (शोरा)।", "Jatiya Sangsad is the supreme legislative body of Bangladesh."]
+  ],
+  [
+    ["भारत के संविधान की किस अनुसूची (Schedule) में विभिन्न राज्यों में अनुसूचित क्षेत्रों के प्रशासन और नियंत्रण के लिए विशेष उपबन्ध है?", "Which Schedule of the Indian Constitution contains special provisions for administration and control of Scheduled Areas in various states?"],
+    [["तीसरी", "Third"], ["पाँचवीं", "Fifth"], ["सातवीं", "Seventh"], ["नौवीं", "Ninth"]],
+    1,
+    ["संविधान की पाँचवीं अनुसूची (Fifth Schedule) में अनुसूचित क्षेत्रों और अनुसूचित जनजातियों के प्रशासन और नियंत्रण के बारे में उपबंध हैं।\n• छठी अनुसूची में असम, मेघालय, त्रिपुरा और मिजोरम (AMTM) के जनजातीय क्षेत्रों के प्रशासन के प्रावधान हैं।", "The Fifth Schedule deals with administration and control of Scheduled Areas and Scheduled Tribes (except Assam, Meghalaya, Tripura, Mizoram covered in 6th Schedule)."]
+  ],
+  [
+    ["उत्तरी गोलार्द्ध में सबसे छोटा दिन होता है?", "When is the shortest day in the Northern Hemisphere?"],
+    [["21 जून", "21 June"], ["21 मार्च", "21 March"], ["22 दिसंबर", "22 December"], ["23 सितंबर", "23 September"]],
+    2,
+    ["उत्तरी गोलार्द्ध में सबसे छोटा दिन 22 दिसंबर (Winter Solstice) को होता है।\n• 21 जून को उत्तरी गोलार्द्ध में सबसे बड़ा दिन (Summer Solstice) होता है।\n• 21 मार्च और 23 सितंबर को संपूर्ण पृथ्वी पर दिन और रात बराबर होते हैं (Equinox)।", "December 22 is the Winter Solstice in the Northern Hemisphere, marking the shortest day of the year."]
+  ],
+  [
+    ["निम्नलिखित सिद्धांत/दृष्टिकोण किस शिक्षाशास्त्री/विद्वान द्वारा प्रतिपादित किया गया है?\n\"ज्ञान शिक्षार्थी द्वारा निष्क्रिय रूप से प्राप्त नहीं किया जाता, बल्कि पूर्व अनुभवों और सामाजिक-सांस्कृतिक अंतः क्रियाओं के आधार पर सक्रिय रूप से निर्मित (Constructed) किया जाता है। इसलिए शिक्षक को सामाजिक विज्ञान की कक्षा में सहयोगात्मक अधिगम (Collaborative Learning) को प्राथमिकता देनी चाहिए।\"", "Which scholar proposed the theory: \"Knowledge is not passively received by the learner, but actively constructed based on past experiences and socio-cultural interactions. Therefore, teachers should prioritize collaborative learning in social science classrooms.\""],
+    [["बी० एफ० स्किनर", "B.F. Skinner"], ["एल० एस० वाइगोत्स्की", "L.S. Vygotsky"], ["जे० एच० बेल", "J.H. Bell"], ["सी० एल० ओग्डेन", "C.L. Ogden"]],
+    1,
+    ["यह सामाजिक-सांस्कृतिक रचनावाद (Socio-Cultural Constructivism) का सिद्धांत लेव वाइगोत्स्की (Lev Vygotsky) ने दिया था।\n• वाइगोत्स्की ने 'समीपस्थ विकास का क्षेत्र' (ZPD) और सहयोगात्मक अधिगम पर विशेष बल दिया।", "Lev Vygotsky formulated the Social Constructivist theory emphasizing collaborative learning and ZPD."]
+  ],
+  [
+    ["निम्नलिखित में से कौनसा एक व्यय भारत की संचित निधि पर भारित नहीं है?", "Which of the following expenditure is NOT charged upon the Consolidated Fund of India?"],
+    [["भारत के राष्ट्रपति का वेतन तथा भत्ते", "Salary and allowances of the President of India"], ["भारत के महान्यायवादी का वेतन तथा भत्ते", "Salary and allowances of the Attorney General of India"], ["भारत के उच्चतम न्यायालय के न्यायाधीश के वेतन एवं भत्ते", "Salary and allowances of the Judges of the Supreme Court"], ["लोक सभा अध्यक्ष का वेतन तथा भत्ते", "Salary and allowances of the Speaker of the Lok Sabha"]],
+    1,
+    ["भारत के महान्यायवादी (Attorney General of India) का वेतन भारत की संचित निधि (Consolidated Fund) पर भारित नहीं होता।\n• महान्यायवादी का वेतन राष्ट्रपति द्वारा निर्धारित किया जाता है (अनुच्छेद 76)।\n• राष्ट्रपति, सुप्रीम कोर्ट के न्यायाधीश, CAG और लोकसभा अध्यक्ष का वेतन संचित निधि पर भारित (Charged) होता है, जिस पर संसद में मतदान नहीं कराया जाता।", "Salary of the Attorney General is determined by the President and is not charged on the Consolidated Fund of India."]
+  ],
+  [
+    ["भारत में कितने राज्यों में विधानपरिषद् है?", "How many states in India have a Legislative Council (Vidhan Parishad)?"],
+    [["11", "11"], ["7", "7"], ["6", "6"], ["10", "10"]],
+    2,
+    ["भारत के 6 राज्यों में द्विधात्मक व्यवस्था (विधान परिषद) है:\n 1. बिहार\n 2. उत्तर प्रदेश\n 3. महाराष्ट्र\n 4. आंध्र प्रदेश\n 5. कर्नाटक\n 6. तेलंगाना\n• अनुच्छेद 169 में विधान परिषद के सृजन या उन्मूलन का प्रावधान है।", "6 Indian states currently have bicameral legislatures with a Legislative Council: UP, Bihar, Maharashtra, Karnataka, Andhra Pradesh, Telangana."]
+  ],
+  [
+    ["निम्नलिखित में से कौन संविधानेत्तर संस्था था?", "Which of the following was an Extra-Constitutional / Non-Constitutional body?"],
+    [["संघ लोक सेवा आयोग", "Union Public Service Commission"], ["वित्त आयोग", "Finance Commission"], ["योजना आयोग", "Planning Commission"], ["चुनाव आयोग", "Election Commission"]],
+    2,
+    ["योजना आयोग (Planning Commission) एक संविधानेत्तर (गैर-संवैधानिक) संस्था था।\n• इसका गठन 15 मार्च 1950 को मंत्रिमंडल के प्रस्ताव द्वारा किया गया था।\n• 1 जनवरी 2015 को इसके स्थान पर 'नीति आयोग' की स्थापना की गई।\n• UPSC (अनुच्छेद 315), वित्त आयोग (अनुच्छेद 280), चुनाव आयोग (अनुच्छेद 324) संवैधानिक निकाय हैं।", "Planning Commission was an extra-constitutional body formed by an executive resolution in 1950, replaced by NITI Aayog in 2015."]
+  ],
+  [
+    ["भारत के वर्तमान राष्ट्रपति का क्रम है?", "What is the order/ordinal position of the current President of India?"],
+    [["19वाँ", "19th"], ["13वाँ", "13th"], ["16वाँ", "16th"], ["15वाँ", "15th"]],
+    3,
+    ["श्रीमती द्रौपदी मुर्मू भारत की 15वीं राष्ट्रपति हैं।\n• वह भारत की पहली आदिवासी राष्ट्रपति तथा सबसे कम उम्र में राष्ट्रपति बनने वाली व्यक्ति हैं।", "Smt. Droupadi Murmu is the 15th President of India, becoming the first tribal female President."]
+  ],
+  [
+    ["राष्ट्रीय आपातकाल की घोषणा के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\n1. अनुच्छेद 352 के तहत 'युद्ध' के आधार पर आपातकाल घोषित किया जा सकता है।\n2. 'बाह्य आक्रमण' के आधार पर भी आपातकाल लागू किया जा सकता है।\n3. 44वें संशोधन द्वारा 'आंतरिक अशांति' के स्थान पर 'सशस्त्र विद्रोह' शब्द जोड़ा गया।\n4. उपर्युक्त सभी आधार राष्ट्रीय आपातकाल की घोषणा हेतु मान्य हैं।\nसही विकल्प चुनें:", "Consider the following statements regarding the declaration of National Emergency:\n1. Emergency can be declared on the ground of 'War' under Article 352.\n2. Emergency can also be imposed on grounds of 'External Aggression'.\n3. 'Armed Rebellion' replaced 'Internal Disturbance' via the 44th Amendment.\n4. All the above grounds are valid for declaring a National Emergency.\nChoose the correct option:"],
+    [["केवल 1 और 2", "Only 1 and 2"], ["केवल 2 और 3", "Only 2 and 3"], ["केवल 1, 2 और 3", "Only 1, 2 and 3"], ["सभी कथन (1, 2, 3 और 4) सही हैं", "All statements (1, 2, 3 and 4) are correct"]],
+    3,
+    ["अनुच्छेद 352 के तहत राष्ट्रीय आपातकाल की घोषणा युद्ध, बाह्य आक्रमण या सशस्त्र विद्रोह के आधार पर की जा सकती है।\n• 44वें संशोधन 1978 द्वारा 'आंतरिक अशांति' शब्द के स्थान पर 'सशस्त्र विद्रोह' शब्द प्रतिस्थापित किया गया। अतः दिए गए सभी कथन सत्य हैं।", "Under Article 352, National Emergency can be declared on grounds of War, External Aggression, or Armed Rebellion. All four statements are correct."]
+  ],
+  [
+    ["संविधान संशोधन अधिनियम जिसके द्वारा वस्तु एवं सेवा कर (GST) लागू किया गया?", "Which Constitutional Amendment Act implemented Goods and Services Tax (GST)?"],
+    [["101वाँ, 2016", "101st, 2016"], ["96वाँ, 2011", "96th, 2011"], ["95वाँ, 2009", "95th, 2009"], ["इनमें से कोई नहीं", "None of these"]],
+    0,
+    ["101वें संविधान संशोधन अधिनियम, 2016 द्वारा भारत में 1 जुलाई 2017 से वस्तु एवं सेवा कर (GST) लागू किया गया।\n• अनुच्छेद 279A के तहत GST परिषद का गठन किया जाता है।", "The 101st Constitutional Amendment Act, 2016 introduced GST in India with effect from July 1, 2017."]
+  ],
+  [
+    ["निम्नलिखित में से कौन-सी सामाजिक विज्ञान (Social Science) विषय के संदर्भ में व्यापक भ्रांत-धारणाएँ (Misconceptions) हैं?\nA. यह केवल 'तथ्यों, अनुच्छेदों और तिथियों को रटने वाला विषय है।\nB. प्राकृतिक विज्ञान (Natural Sciences), सामाजिक विज्ञान से अधिक वैज्ञानिक और श्रेष्ठ है।\nC. सामाजिक विज्ञान में विशेषज्ञता प्राप्त विद्यार्थियों के लिए रोजगार के अवसर केवल शिक्षण क्षेत्र तक सीमित हैं।\nD. सामाजिक विज्ञान का दैनिक जीवन की समस्याओं, नीति-निर्माण और नागरिक जिम्मेदारियों से कोई व्यावहारिक संबंध नहीं है।", "Which of the following are common misconceptions regarding Social Science?\nA. It is merely a subject of memorizing facts, articles, and dates.\nB. Natural Sciences are superior and more scientific than Social Science.\nC. Employment opportunities for Social Science students are limited only to teaching.\nD. It has no practical relation to daily life problems, policy-making, and civic responsibilities."],
+    [["केवल A, B और C", "Only A, B and C"], ["केवल B और D", "Only B and D"], ["A, B, C और D सभी", "All A, B, C and D"], ["केवल A और D", "Only A and D"]],
+    2,
+    ["सामाजिक विज्ञान के संदर्भ में दिए गए चारों कथन (A, B, C और D) व्यापक भ्रांत-धारणाएँ (Misconceptions) हैं।\n• सामाजिक विज्ञान केवल रटना नहीं, बल्कि आलोचनात्मक सोच और नागरिक बोध विकसित करता है। इसमें करियर के अनेक अवसर उपलब्ध हैं।", "All four options reflect widespread misconceptions about Social Science."]
+  ],
+  [
+    ["संविधान के किस अनुच्छेद में राज्यों द्वारा प्राथमिक शिक्षा मातृभाषा में दिए जाने का प्रावधान है?", "Which article of the Constitution provides for instruction in mother tongue at primary stage?"],
+    [["349", "349"], ["350", "350"], ["350 A", "350 A"], ["351", "351"]],
+    2,
+    ["अनुच्छेद 350A में प्रावधान है कि प्रत्येक राज्य प्राथमिक स्तर पर मातृभाषा में शिक्षा की पर्याप्त सुविधाएँ उपलब्ध कराएगा।\n• यह 7वें संविधान संशोधन अधिनियम 1956 द्वारा जोड़ा गया था।\n• अनुच्छेद 351 हिंदी भाषा के विकास हेतु निर्देशों से संबंधित है।", "Article 350A directs states to provide adequate facilities for instruction in the mother tongue at the primary stage of education."]
+  ],
+  [
+    ["भारत सरकार 'भारत रत्न' पुरस्कार संविधान के किस अनुच्छेद के तहत प्रदान करती है?", "Under which Article of the Constitution does the Government of India confer the 'Bharat Ratna' award?"],
+    [["अनुच्छेद-16", "Article 16"], ["अनुच्छेद-19", "Article 19"], ["अनुच्छेद-18", "Article 18"], ["अनुच्छेद-20", "Article 20"]],
+    2,
+    ["भारत सरकार अनुच्छेद 18 (उपाधियों का अंत) के तहत भारत रत्न और पद्म पुरस्कार प्रदान करती है।\n• सर्वोच्च न्यायालय के निर्णय के अनुसार, भारत रत्न और पद्म पुरस्कार 'उपादियाँ' (Titles) नहीं बल्कि सम्मान हैं, इसलिए इनका उपयोग नाम के आगे/पीछे उपाधि की तरह नहीं किया जा सकता।", "National awards like Bharat Ratna are conferred under Article 18, maintained as state honors rather than titles."]
+  ],
+  [
+    ["सर्वोच्च न्यायालय पाँच तरह के रिट जारी करती है। जिसमें से एक है-", "The Supreme Court issues five types of writs. Which one of the following is one of them?"],
+    [["गणपूर्ति", "Quorum"], ["लेखानुदान", "Vote on Account"], ["सचेतक", "Whip"], ["अधिकार पृच्छा", "Quo-Warranto"]],
+    3,
+    ["अधिकार पृच्छा (Quo-Warranto) सर्वोच्च न्यायालय और उच्च न्यायालय द्वारा जारी की जाने वाली 5 रिटों में से एक है।\n• 5 रिटें: बंदी प्रत्यक्षीकरण (Habeas Corpus), परमादेश (Mandamus), प्रतिषेध (Prohibition), उत्प्रेषण (Certiorari), अधिकार-पृच्छा (Quo-Warranto)।\n• सुप्रीम कोर्ट अनुच्छेद 32 और हाई कोर्ट अनुच्छेद 226 के तहत रिट जारी करते हैं।", "Quo-Warranto is one of the 5 prerogative writs issued under Article 32 (Supreme Court) and Article 226 (High Court)."]
+  ],
+  [
+    ["भारत के वर्तमान मुख्य चुनाव आयुक्त हैं?", "Who is the Chief Election Commissioner of India?"],
+    [["ओम प्रकाश रावत", "Om Prakash Rawat"], ["नसीम जैदी", "Nasim Zaidi"], ["सुनील अरोड़ा", "Sunil Arora"], ["ज्ञानेश कुमार", "Gyanesh Kumar"]],
+    3,
+    ["श्री ज्ञानेश कुमार भारत के 26वें मुख्य निर्वाचन आयुक्त (Chief Election Commissioner) के रूप में कार्यरत हैं।\n• चुनाव आयोग का गठन 25 जनवरी 1950 को हुआ था (इसलिए 25 जनवरी को राष्ट्रीय मतदाता दिवस मनाया जाता है)।", "Gyanesh Kumar serves as the Chief Election Commissioner of India (26th CEC)."]
+  ],
+  [
+    ["महाजनपद काल में 'लिच्छवी' किस राज्य का अंग था?", "In the Mahajanapada period, 'Lichchhavi' was a part of which modern state/region?"],
+    [["बिहार", "Bihar"], ["झारखण्ड", "Jharkhand"], ["उत्तराखंड", "Uttarakhand"], ["उत्तर प्रदेश", "Uttar Pradesh"]],
+    0,
+    ["लिच्छवी गणराज्य बिहार राज्य (वैशाली) का अंग था।\n• लिच्छवी वज्जि संघ का प्रमुख घटक था और इसे विश्व का पहला गणराज्य (First Republic) माना जाता है। इसकी राजधानी वैशाली थी।", "Lichchhavi was part of Vajji confederacy located in modern Bihar (Vaishali), regarded as the world's first republic."]
+  ],
+  [
+    ["निम्न में से कौन सा सैंधव सभ्यता का स्थल नहीं है?", "Which of the following is NOT a site of the Indus Valley Civilization?"],
+    [["राखीगढ़ी", "Rakhigarhi"], ["कालीबंगा", "Kalibangan"], ["लोथल", "Lothal"], ["लंघनाज", "Langhnaj"]],
+    3,
+    ["लंघनाज (Langhnaj) हड़प्पा/सैंधव सभ्यता का स्थल नहीं है, बल्कि यह गुजरात के मेहसाणा जिले में स्थित एक मध्य पाषाण काल (Mesolithic site) का पुरातात्विक स्थल है।\n• राखीगढ़ी (हरियाणा), कालीबंगा (राजस्थान), लोथल (गुजरात) प्रमुख हड़प्पा स्थल हैं।", "Langhnaj is a Mesolithic site in Gujarat, not an Indus Valley Civilization site."]
+  ],
+  [
+    ["सूची-1 (क्रांतिकारी संगठन) को सूची-II (संस्थापक/संबंधित व्यक्ति) से सुमेलित कीजिए:\nसूची-1: A. अनुशीलन समिति, B. अभिनव भारत, C. गदर पार्टी, D. हिंदुस्तान रिपब्लिकन एसोसिएशन\nसूची-II: 1. लाला हरदयाल, 2. प्रमथनाथ मित्र, 3. विनायक दामोदर सावरकर, 4. सचिन्द्रनाथ सान्याल\nसही कूट चुनिए:", "Match List-I (Revolutionary Organization) with List-II (Founder/Associated Person):\nList-I: A. Anushilan Samiti, B. Abhinav Bharat, C. Ghadar Party, D. Hindustan Republican Association\nList-II: 1. Lala Hardayal, 2. Pramathanath Mitra, 3. Vinayak Damodar Savarkar, 4. Sachindra Nath Sanyal\nSelect correct code:"],
+    [["A-2, B-3, C-1, D-4", "A-2, B-3, C-1, D-4"], ["A-1, B-2, C-3, D-4", "A-1, B-2, C-3, D-4"], ["A-3, B-2, C-4, D-1", "A-3, B-2, C-4, D-1"], ["A-2, B-1, C-3, D-4", "A-2, B-1, C-3, D-4"]],
+    0,
+    ["सही सुमेल:\n• अनुशीलन समिति - प्रमथनाथ मित्र (P. Mitra)\n• अभिनव भारत - विनायक दामोदर सावरकर (1904)\n• गदर पार्टी - लाला हरदयाल (1913, सैन फ्रांसिस्को)\n• हिंदुस्तान रिपब्लिकन एसोसिएशन (HRA) - सचिन्द्रनाथ सान्याल (1924)", "Correct Matches: Anushilan Samiti (P. Mitra), Abhinav Bharat (V.D. Savarkar), Ghadar Party (Lala Hardayal), HRA (Sachindra Nath Sanyal)."]
+  ],
+  [
+    ["आर्यों का मूल निवास स्थान मध्य एशिया को माना जाता है। यह मत किनका है?", "Central Asia is considered the original homeland of the Aryans. Whose view is this?"],
+    [["दयानंद सरस्वती", "Dayananda Saraswati"], ["मैक्समूलर", "Max Müller"], ["वीर सावरकर", "Veer Savarkar"], ["जॉन मार्शल", "John Marshall"]],
+    1,
+    ["आर्यों का मूल निवास स्थान मध्य एशिया होने का मत प्रसिद्ध जर्मन विद्वान मैक्समूलर (Max Müller) ने दिया था।\n• स्वामी दयानंद सरस्वती ने तिब्बत और बाल गंगाधर तिलक ने आर्कटिक प्रदेश (उत्तरी ध्रुव) को आर्यों का मूल निवास माना था।", "Max Müller propounded the theory that Aryans originally migrated from Central Asia."]
+  ],
+  [
+    ["इस्लाम जगत में खलीफा का पद तुर्की के शासक मुस्तफा कमाल पाशा ने कब समाप्त कर दिया?", "When did the Turkish leader Mustafa Kemal Pasha abolish the post of Caliphate in the Islamic world?"],
+    [["1913", "1913"], ["1919", "1919"], ["1924", "1924"], ["1942", "1942"]],
+    2,
+    ["मुस्तफा कमाल पाशा (अतातुर्क) ने 3 मार्च 1924 को तुर्की में खलीफा के पद को औपचारिक रूप से समाप्त कर दिया।\n• इसके बाद तुर्की एक धर्मनिरपेक्ष गणराज्य बना।", "Mustafa Kemal Pasha officially abolished the Caliphate in Turkey on March 3, 1924."]
+  ],
+  [
+    ["सिकन्दर महान के गुरु कौन थे?", "Who was the teacher/guru of Alexander the Great?"],
+    [["प्लूटो", "Plato"], ["सुकरात", "Socrates"], ["अरस्तू", "Aristotle"], ["नियार्कस", "Nearchus"]],
+    2,
+    ["सिकंदर महान के गुरु अरस्तू (Aristotle) थे।\n• दर्शन शास्त्र की गुरु-शिष्य परंपरा: सुकरात → प्लेटो → अरस्तू → सिकंदर महान।", "Aristotle was the tutor of Alexander the Great.\n• Teacher sequence: Socrates taught Plato, Plato taught Aristotle, Aristotle taught Alexander."]
+  ],
+  [
+    ["गाँधी द्वारा दी गई बुनियादी शिक्षा से संबंधित 'नई तालीम' प्रतिवेदन जाकिर हुसैन द्वारा कब प्रस्तुत की गई?", "When was the 'Nai Talim' report on basic education, propounded by Gandhi, presented by Zakir Hussain?"],
+    [["1925", "1925"], ["1937", "1937"], ["1919", "1919"], ["1942", "1942"]],
+    1,
+    ["डॉ. जाकिर हुसैन समिति ने अक्टूबर 1937 में वर्धा शिक्षा योजना के तहत 'नई तालीम' / बुनियादी शिक्षा का प्रतिवेदन प्रस्तुत किया था।\n• यह शिक्षा नीति हस्तशिल्प और मातृभाषा आधारित स्वावलंबी शिक्षा पर केंद्रित थी।", "Dr. Zakir Hussain Committee submitted the Wardha Education Scheme ('Nai Talim') report in October 1937."]
+  ],
+  [
+    ["धुरी राष्ट्र में कौन देश शामिल नहीं था?", "Which country was NOT included in the Axis Powers during WWII?"],
+    [["इटली", "Italy"], ["अमेरिका", "USA"], ["जर्मनी", "Germany"], ["जापान", "Japan"]],
+    1,
+    ["अमेरिका (USA) धुरी राष्ट्रों में शामिल नहीं था, बल्कि वह मित्र राष्ट्रों (Allied Powers) का हिस्सा था।\n• धुरी राष्ट्र (Axis Powers): जर्मनी, इटली, जापान।\n• मित्र राष्ट्र (Allies): ब्रिटेन, फ्रांस, सोवियत संघ, अमेरिका।", "USA was a major Allied power; the primary Axis powers were Germany, Italy, and Japan."]
+  ],
+  [
+    ["संयुक्त राष्ट्र संघ के सचिवालय का प्रधान कार्यालय कहाँ अवस्थित है?", "Where is the headquarters of the Secretariat of the United Nations located?"],
+    [["बर्न", "Bern"], ["लॉस एंजिल्स", "Los Angeles"], ["जेनेवा", "Geneva"], ["न्यूयार्क", "New York"]],
+    3,
+    ["संयुक्त राष्ट्र संघ (UN) का मुख्यालय न्यूयॉर्क (अमेरिका) के मैनहट्टन द्वीप में अवस्थित है।\n• UN की स्थापना 24 अक्टूबर 1945 को हुई थी।", "United Nations headquarters is situated in New York City, USA."]
+  ],
+  [
+    ["भारत में प्रेस अधिनियमों के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\n1. 1799 का प्रेस अधिनियम लॉर्ड वेलेजली ने नेपोलियन के आक्रमण की आशंका से लागू किया था।\n2. 1835 के मेटकाफ अधिनियम को 'भारतीय प्रेस का मुक्तिदाता' (Liberator of Indian Press) कहा जाता है।\n3. 1878 का वर्नाक्युलर प्रेस एक्ट लॉर्ड लिटन द्वारा लाया गया था, जिसे लॉर्ड रिपन ने 1882 में निरस्त किया।\n4. 1908 का न्यूजपेपर्स (क्राइम्स इंसाइटमेंट) एक्ट लोकमान्य तिलक के विरुद्ध प्रयोग किया गया था।\nउपर्युक्त में से कितने कथन सही हैं?", "Consider the following statements regarding Press Acts in India:\n1. Censorship of Press Act 1799 was imposed by Lord Wellesley fearing Napoleonic invasion.\n2. Metcalfe Act of 1835 is called the 'Liberator of Indian Press'.\n3. Vernacular Press Act 1878 was brought by Lord Lytton and repealed by Lord Ripon in 1882.\n4. Newspapers (Incitement to Offences) Act 1908 was used against Lokmanya Tilak.\nHow many of the above statements are correct?"],
+    [["केवल दो", "Only two"], ["केवल तीन", "Only three"], ["सभी चार", "All four"], ["केवल एक", "Only one"]],
+    2,
+    ["प्रेस अधिनियमों के संदर्भ में दिए गए सभी चारों (1, 2, 3 और 4) कथन सत्य हैं।\n• चार्ल्‍स मेटकाफ़ को भारतीय समाचार पत्रों का मुक्तिदाता कहा जाता है।\n• वर्नाक्युलर प्रेस एक्ट को लिटन लाया और रिपन ने रद्द किया।", "All four statements are historical facts regarding British press regulations in India."]
+  ],
+  [
+    ["फ्रंटियर गाँधी किसे कहा जाता है?", "Who is known as 'Frontier Gandhi'?"],
+    [["चापेकर बन्धु", "Chapekar Brothers"], ["अलीबंधु", "Ali Brothers"], ["खान अब्दुल गफ्फार खान", "Khan Abdul Ghaffar Khan"], ["सैयद अहमद खाँ", "Syed Ahmed Khan"]],
+    2,
+    ["खान अब्दुल गफ्फार खान को 'फ्रंटियर गाँधी' (सीमांत गांधी) या बादशाह खान कहा जाता है।\n• उन्होंने उत्तर-पश्चिम सीमा प्रांत में अहिंसक आंदोलन 'खुदाई खिदमतगार' (लाल कुर्ती आंदोलन) का नेतृत्व किया था।\n• वह 1987 में भारत रत्न पाने वाले पहले गैर-भारतीय नागरिक थे।", "Khan Abdul Ghaffar Khan led the Khudai Khidmatgar movement and is known as Frontier Gandhi."]
+  ],
+  [
+    ["अमेरिका के राष्ट्रपति रुजवेल्ट द्वारा अपनाई गई आर्थिक नीति क्या थी?", "What was the economic policy adopted by US President Franklin D. Roosevelt?"],
+    [["न्यू इकोनोमी", "New Economy"], ["न्यूडील", "New Deal"], ["न्यू जर्सी", "New Jersey"], ["न्यू डाउन", "New Dawn"]],
+    1,
+    ["एफ०डी० रूजवेल्ट ने 1933 में महान आर्थिक मंदी (1929-33) से निपटने के लिए 'न्यू डील' (New Deal) नीति अपनाई थी।\n• इसमें राहत, पुनर्निर्माण और सुधार (3 Rs: Relief, Recovery, Reform) पर बल दिया गया था।", "President Franklin D. Roosevelt launched the 'New Deal' programs to overcome the Great Depression in the 1930s."]
+  ],
+  [
+    ["\"अमृत बाजार पत्रिका\" का प्रकाशन किसने आरंभ किया?", "Who started the publication of 'Amrita Bazar Patrika'?"],
+    [["गंगाधर भट्टाचार्य", "Gangadhar Bhattacharya"], ["द्वारकानाथ टैगोर", "Dwarkanath Tagore"], ["मनमोहन घोष", "Manmohan Ghosh"], ["मोतीलाल घोष", "Motilal Ghosh / Sisir Kumar Ghosh"]],
+    3,
+    ["'अमृत बाजार पत्रिका' की शुरुआत 1868 में शिशिर कुमार घोष और मोतीलाल घोष द्वारा बंगाली भाषा में की गई थी।\n• 1878 में वर्नाक्युलर प्रेस एक्ट से बचने के लिए यह रातों-रात अंग्रेजी भाषा का समाचार पत्र बन गया था।", "Amrita Bazar Patrika was started in 1868 by Sisir Kumar Ghosh and Motilal Ghosh."]
+  ],
+  [
+    ["पुष्यभूति वंश के शासक 'हर्षवर्द्धन' को किसने हराया?", "Who defeated King Harshavardhana of the Pushyabhuti dynasty?"],
+    [["शशांक", "Shashanka"], ["यशोवर्मन", "Yashovarman"], ["सामंत सेन", "Samanta Sena"], ["पुलकेशिन द्वितीय", "Pulakeshin II"]],
+    3,
+    ["चालुक्य वंश के शासक पुलकेशिन द्वितीय ने नर्मदा नदी के तट पर हर्षवर्द्धन को पराजित किया था।\n• इस युद्ध की जानकारी पुलकेशिन द्वितीय के 'ऐहोल अभिलेख' (रविकीर्ति द्वारा रचित) से मिलती है।", "Pulakeshin II, the Chalukya king of Badami, defeated Harshavardhana on the banks of Narmada river as recorded in the Aihole Inscription."]
+  ],
+  [
+    ["चातुष्य वर्ण समाज की कल्पना ऋग्वेद के किस मंडल में की गई है?", "In which Mandala of the Rigveda is the concept of a four-fold (Chatushvarna) society mentioned?"],
+    [["नवम्", "Ninth"], ["अष्टम्", "Eighth"], ["दशम्", "Tenth"], ["एकादश", "Eleventh"]],
+    2,
+    ["ऋग्वेद के 10वें मंडल के 'पुरुषसूक्त' में चार वर्णों (ब्राह्मण, क्षत्रिय, वैश्य, शूद्र) का उल्लेख प्रथम बार मिलता है।\n• 3रे मंडल में गायत्री मंत्र और 9वें मंडल में सोम देवता का वर्णन है।", "The 10th Mandala (Purusha Sukta) of the Rigveda contains the earliest reference to the four Varnas."]
+  ],
+  [
+    ["अंकोरवाट का मंदिर अवस्थित है-", "Where is the Angkor Wat temple located?"],
+    [["जावा", "Java"], ["सुमात्रा", "Sumatra"], ["इंडोनेशिया", "Indonesia"], ["कम्बोडिया", "Cambodia"]],
+    3,
+    ["अंकोरवाट का मंदिर कंबोडिया (कंबुज) में स्थित है।\n• इसका निर्माण 12वीं शताब्दी के प्रारंभ में सूर्यवर्मन द्वितीय ने करवाया था। यह भगवान विष्णु को समर्पित विश्व का सबसे बड़ा धार्मिक स्मारक है।", "Angkor Wat, located in Cambodia, was built by King Suryavarman II in the early 12th century."]
+  ],
+  [
+    ["सूची-1 (रिट) को सूची-II (शाब्दिक अर्थ एवं प्रयोग) से सुमेलित कीजिए:\nसूची-1: A. बंदी प्रत्यक्षीकरण, B. परमादेश, C. प्रतिषेध, D. अधिकार-पृच्छा\nसूची-II: 1. 'हम आदेश देते हैं', 2. 'शरीर को प्रस्तुत किया जाए', 3. 'किस अधिकार से', 4. 'रुको/निषेध'\nसही कूट का चयन करें:", "Match List-I (Writ) with List-II (Meaning/Use):\nList-I: A. Habeas Corpus, B. Mandamus, C. Prohibition, D. Quo-Warranto\nList-II: 1. 'We Command', 2. 'To have the body of', 3. 'By what authority', 4. 'To forbid'\nSelect correct code:"],
+    [["A-2, B-1, C-4, D-3", "A-2, B-1, C-4, D-3"], ["A-1, B-2, C-3, D-4", "A-1, B-2, C-3, D-4"], ["A-2, B-1, C-3, D-4", "A-2, B-1, C-3, D-4"], ["A-3, B-2, C-4, D-1", "A-3, B-2, C-4, D-1"]],
+    0,
+    ["सही सुमेल:\n• बंदी प्रत्यक्षीकरण (Habeas Corpus) - 'शरीर को प्रस्तुत किया जाए' (2)\n• परमादेश (Mandamus) - 'हम आदेश देते हैं' (1)\n• प्रतिषेध (Prohibition) - 'रुको/निषेध' (4)\n• अधिकार-पृच्छा (Quo-Warranto) - 'किस अधिकार से' (3)", "Correct Writ meanings: Habeas Corpus (To have the body), Mandamus (We Command), Prohibition (To forbid), Quo-Warranto (By what authority)."]
+  ],
+  [
+    ["पाटलिपुत्र को किस मगध शासक ने अपनी राजधानी बनाया था?", "Which Magadha ruler made Pataliputra his capital?"],
+    [["उदायिन", "Udayin"], ["शिशुनाग", "Shishunaga"], ["नागदाशक", "Nagadasaka"], ["अजातशत्रु", "Ajatashatru"]],
+    0,
+    ["हर्यक वंश के शासक उदायिन (Udayin) ने गंगा और सोन नदियों के संगम पर पाटलिपुत्र शहर बसाया और राजगृह के स्थान पर इसे मगध की राजधानी बनाया।", "Udayin founded the city of Pataliputra and shifted the capital of Magadha from Rajagriha to Pataliputra."]
+  ],
+  [
+    ["आधुनिक भारत के इतिहास में सहायक संधि की वास्तविक शुरुआत किसने की?", "Who officially introduced the Subsidiary Alliance system in modern Indian history?"],
+    [["लॉर्ड डलहौजी", "Lord Dalhousie"], ["लॉर्ड विलियम बैटिंक", "Lord William Bentinck"], ["लॉर्ड वेलेस्ली", "Lord Wellesley"], ["लॉर्ड रिपन", "Lord Ripon"]],
+    2,
+    ["लॉर्ड वेलेस्ली (1798-1805) ने भारत में अंग्रेजी राज्य का विस्तार करने के लिए 'सहायक संधि' (Subsidiary Alliance) नीति को व्यापक रूप से लागू किया।\n• सबसे पहले 1798 में हैदराबाद के निज़ाम ने सहायक संधि स्वीकार की थी। (फ्रांसीसी गवर्नर डुप्ले ने इसका सर्वप्रथम प्रयोग किया था)।", "Lord Wellesley implemented the Subsidiary Alliance System in India, with Hyderabad being the first state to sign it in 1798."]
+  ],
+  [
+    ["भारत में डच ईस्ट इण्डिया कम्पनी की स्थापना कब हुई थी?", "When was the Dutch East India Company established in India/globally?"],
+    [["1616", "1616"], ["1602", "1602"], ["1600", "1600"], ["1498", "1498"], ["1605", "1605"]],
+    1,
+    ["डच ईस्ट इंडिया कंपनी (Vereenigde Oostindische Compagnie - VOC) की स्थापना 1602 ई. में हुई थी।\n• डचों ने भारत में अपनी पहली व्यापारी कोठी 1605 में मसूलीपट्टनम में खोली थी।\n• 1759 के बेदरा के युद्ध में अंग्रेजों ने डचों को पराजित किया।", "The Dutch East India Company was established in 1602 and set up its first factory in Masulipatnam in 1605."]
+  ],
+  [
+    ["सप्तवर्षीय युद्ध किन दो देशों के बीच हुआ था?", "The Seven Years' War was fought between which two countries?"],
+    [["इंग्लैण्ड, जर्मनी", "England, Germany"], ["फ्रांस, जर्मनी", "France, Germany"], ["जर्मनी, जापान", "Germany, Japan"], ["इंग्लैण्ड, फ्रांस", "England, France"]],
+    3,
+    ["सप्तवर्षीय युद्ध (1756-1763) ब्रिटेन (इंग्लैंड) और फ्रांस के बीच लड़ा गया वैश्विक संघर्ष था।\n• इसी के प्रभाव से भारत में तीसरा कर्नाटक युद्ध (1756-63) और वांडीवाश का युद्ध (1760) हुआ, जिसमें फ्रांसीसियों की पराजय हुई।", "The Seven Years' War (1756–1763) was fought primarily between Great Britain and France."]
+  ],
+  [
+    ["वर्साय की संधि कब हुई थी?", "When was the Treaty of Versailles signed?"],
+    [["1914", "1914"], ["1919", "1919"], ["1918", "1918"], ["1920", "1920"]],
+    1,
+    ["प्रथम विश्व युद्ध की समाप्ति के बाद 28 जून 1919 को पेरिस में 'वर्साय की संधि' (Treaty of Versailles) पर हस्ताक्षर किए गए।\n• जर्मनी पर थोपी गई यह अपमानजनक संधि द्वितीय विश्व युद्ध का मुख्य कारण बनी।", "The Treaty of Versailles was signed on June 28, 1919, ending World War I."]
+  ],
+  [
+    ["नई आर्थिक नीति (1921, NEP) के जन्मदाता कौन थे?", "Who was the architect/creator of the New Economic Policy (NEP, 1921) in Russia?"],
+    [["कार्ल मार्क्स", "Karl Marx"], ["लेनिन", "Lenin"], ["स्टालिन", "Stalin"], ["ट्राटस्की", "Trotsky"]],
+    1,
+    ["रूस के बोल्शेविक नेता व्लादिमीर लेनिन ने 1921 में 'नई आर्थिक नीति' (NEP - Novaya Ekonomicheskaya Politika) लागू की थी।\n• इसमें गृहयुद्ध के बाद रूसी अर्थव्यवस्था को उबारने के लिए सीमित स्तर पर निजी व्यापार की अनुमति दी गई।", "Vladimir Lenin introduced the New Economic Policy (NEP) in Soviet Russia in 1921."]
+  ],
+  [
+    ["सोवियत संघ का विघटन किस वर्ष हुआ?", "In which year did the dissolution of the Soviet Union (USSR) occur?"],
+    [["1985", "1985"], ["1971", "1971"], ["1988", "1988"], ["1991", "1991"]],
+    3,
+    ["सोवियत संघ (USSR) का औपचारिक विघटन 26 दिसम्बर 1991 को हुआ।\n• इसके विघटन से 15 नए स्वतंत्र देश अस्तित्व में आए, जिनमें रूस सबसे बड़ा उत्तराधिकारी देश बना। लिथुआनिया सबसे पहले अलग हुआ था।", "The Soviet Union formally dissolved on December 26, 1991, breaking into 15 independent republics."]
+  ],
+  [
+    ["संयुक्त राष्ट्र (UN) के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\n1. संयुक्त राष्ट्र की स्थापना 24 अक्टूबर, 1945 को हुई थी और इसका मुख्यालय न्यूयॉर्क में स्थित है।\n2. सुरक्षा परिषद के 5 स्थायी सदस्य हैं अमेरिका, रूस, ब्रिटेन, फ्रांस और चीन।\n3. अंतर्राष्ट्रीय न्यायालय (ICJ) का मुख्यालय जेनेवा (स्विट्ज़रलैंड) में स्थित है।\n4. UN के वर्तमान महासचिव एंटोनियो गुटेरेस हैं, जो पुर्तगाल से हैं।\nउपर्युक्त में से कौन-सा कथन सही नहीं है?", "Consider the following statements regarding United Nations (UN):\n1. UN was established on 24 Oct 1945 with HQ in New York.\n2. Security Council has 5 permanent members: USA, Russia, UK, France, China.\n3. International Court of Justice (ICJ) is headquartered in Geneva, Switzerland.\n4. Current UN Secretary-General Antonio Guterres is from Portugal.\nWhich statement is NOT correct?"],
+    [["केवल 1", "Only 1"], ["केवल 2", "Only 2"], ["केवल 3", "Only 3"], ["केवल 4", "Only 4"]],
+    2,
+    ["कथन 3 सही नहीं है।\n• अंतर्राष्ट्रीय न्यायालय (ICJ) का मुख्यालय द हेग (नीदरलैंड्स) में स्थित है, न कि जेनेवा में। संयुक्त राष्ट्र के अन्य सभी प्रमुख अंगों के मुख्यालय न्यूयॉर्क में हैं।", "Statement 3 is incorrect because ICJ headquarters is situated in The Hague, Netherlands."]
+  ],
+  [
+    ["मिरात-उल-अखबार पत्रिका के संपादक कौन थे?", "Who was the editor of the journal 'Mirat-ul-Akbar'?"],
+    [["ईश्वरचन्द्र विद्यासागर", "Ishwar Chandra Vidyasagar"], ["राजा राममोहन राय", "Raja Ram Mohan Roy"], ["अरविन्द घोष", "Aurobindo Ghosh"], ["अली जिन्ना", "Ali Jinnah"]],
+    1,
+    ["'मिरात-उल-अखबार' (फारसी भाषा का पहला समाचार पत्र) का संपादन 1822 में राजा राममोहन राय द्वारा प्रारंभ किया गया था।\n• उनकी अन्य प्रसिद्ध पत्रिका 'संवाद कौमुदी' (बंगाली) थी।", "Raja Ram Mohan Roy published Mirat-ul-Akbar, the first Persian language newspaper in India, in 1822."]
+  ],
+  [
+    ["संयुक्त राष्ट्र सुरक्षा परिषद के पाँच स्थायी सदस्य हैं-", "The five permanent members of the UN Security Council are-"],
+    [["चीन, जर्मनी, रूस, ब्रिटेन और यू.एस.ए.", "China, Germany, Russia, UK and USA"], ["चीन, जर्मनी, यू.एस.ए., ब्रिटेन और कनाडा", "China, Germany, USA, UK and Canada"], ["चीन, फ्रांस, रूस, ब्रिटेन और यू.एस.ए.", "China, France, Russia, UK and USA"], ["चीन, कनाडा, फ्रांस, यू.एस.ए. और जर्मनी", "China, Canada, France, USA and Germany"]],
+    2,
+    ["UNSC के 5 स्थायी सदस्य (वीटो पावर वाले): चीन, फ्रांस, रूस, ब्रिटेन और USA (P5)।\n• इसमें 10 अस्थायी सदस्य भी होते हैं जिनका चुनाव 2 वर्ष के लिए होता है।", "The P5 members of UNSC are China, France, Russia, UK, and USA."]
+  ],
+  [
+    ["सही सुमेलित नहीं है-", "Which of the following is NOT correctly matched?"],
+    [["29 दिसम्बर - अंतर्राष्ट्रीय शिक्षा दिवस", "29 December - International Education Day"], ["24 दिसम्बर - राष्ट्रीय उपभोक्ता अधिकार दिवस", "24 December - National Consumer Rights Day"], ["23 दिसम्बर - किसान दिवस", "23 December - Kisan Diwas"], ["18 दिसम्बर - अन्तर्राष्ट्रीय प्रवास दिवस", "18 December - International Migrants Day"]],
+    0,
+    ["विकल्प (A) सही सुमेलित नहीं है।\n• 'अंतर्राष्ट्रीय शिक्षा दिवस' प्रतिवर्ष 24 जनवरी को मनाया जाता है। (भारत में राष्ट्रीय शिक्षा दिवस 11 नवंबर को मौलाना अबुल कलाम आजाद की जयंती पर मनाया जाता है)।\n• 24 दिसंबर (राष्ट्रीय उपभोक्ता अधिकार दिवस), 23 दिसंबर (चौधरी चरण सिंह जयंती / किसान दिवस) तथा 18 दिसंबर (अंतर्राष्ट्रीय प्रवासी दिवस) सही सुमेलित हैं।\n*(नोट: PDF उत्तर कुंजी में मुद्रण त्रुटि के कारण (A) 68 लिखा गया है, जिसका सही अर्थ विकल्प A है।)*", "Option A is mismatched. International Day of Education is observed on January 24."]
+  ],
+  [
+    ["गुटनिरपेक्ष आंदोलन (NAM) की स्थापना में शामिल नेता थे-", "Leaders involved in establishing the Non-Aligned Movement (NAM) were-"],
+    [["मार्सल जोसेफ टीटो", "Marshal Josip Broz Tito"], ["कर्नल नासिर", "Gamal Abdel Nasser"], ["पं० जवाहर लाल नेहरू", "Pt. Jawaharlal Nehru"], ["A, B एवं C सभी", "All A, B and C"]],
+    3,
+    ["NAM (Non-Aligned Movement) की स्थापना में पं. जवाहरलाल नेहरू (भारत), मार्शल जोसेफ टीटो (युगोस्लाविया), कर्नल गमाल अब्दुल नासिर (मिस्र), वामे एनक्रूमा (घाना) और सुकर्णो (इंडोनेशिया) की मुख्य भूमिका थी।\n• पहला शिखर सम्मेलन 1961 में बेलग्रेड में हुआ था।", "NAM was founded in 1961 in Belgrade by Nehru, Tito, Nasser, Sukarno, and Nkrumah."]
+  ],
+  [
+    ["CTBT (कॉम्प्रिहेन्सिव न्यूक्लियर टेस्ट बैन ट्रीटी) कब अस्तित्व में आया?", "When did CTBT (Comprehensive Nuclear-Test-Ban Treaty) come into existence?"],
+    [["1994", "1994"], ["1996", "1996"], ["1998", "1998"], ["2004", "2004"]],
+    1,
+    ["CTBT संयुक्त राष्ट्र महासभा द्वारा 24 सितंबर 1996 को अपनाया गया था।\n• इसका उद्देश्य सभी प्रकार के परमाणु परीक्षणों पर प्रतिबंध लगाना है। इसका मुख्यालय वियना (ऑस्ट्रिया) में है।", "CTBT was adopted by the UN General Assembly in 1996 to ban all nuclear explosions."]
+  ],
+  [
+    ["'लास्ट सपर' (The Last Supper) को किसने चित्रित किया था?", "Who painted 'The Last Supper'?"],
+    [["माइकल एंजेलो", "Michelangelo"], ["लियोनार्दो द विंसी", "Leonardo da Vinci"], ["पाब्लो पिकासो", "Pablo Picasso"], ["रेम्ब्रांट", "Rembrandt"]],
+    1,
+    ["'द लास्ट सपर' और 'मोनालिसा' की विश्व प्रसिद्ध पेंटिंग्स इतालवी पुनर्जागरणकालीन कलाकार लियोनार्दो द विंसी (Leonardo da Vinci) ने बनाई थीं।", "Leonardo da Vinci painted the world-famous masterpieces 'The Last Supper' and 'Mona Lisa'."]
+  ],
+  [
+    ["भारतीय संविधान के किस अनुच्छेद में राष्ट्रीय अनुसूचित जनजाति आयोग (ST Commission) का प्रावधान है?", "Which Article of the Indian Constitution provides for National Commission for Scheduled Tribes?"],
+    [["अनुच्छेद 338 A", "Article 338 A"], ["अनुच्छेद 341", "Article 341"], ["अनुच्छेद 16", "Article 16"], ["अनुच्छेद 82", "Article 82"]],
+    0,
+    ["अनुच्छेद 338A के तहत 'राष्ट्रीय अनुसूचित जनजाति आयोग' (NCST) का प्रावधान है, जिसे 89वें संविधान संशोधन अधिनियम 2003 द्वारा जोड़ा गया था।\n• अनुच्छेद 338 में राष्ट्रीय अनुसूचित जाति आयोग (NCSC) और अनुच्छेद 338B में राष्ट्रीय पिछड़ा वर्ग आयोग (NCBC) है।", "Article 338A was inserted by the 89th Amendment Act, 2003 to establish the National Commission for Scheduled Tribes."]
+  ],
+  [
+    ["सूची-1 (बिहार की पहाड़ी/स्थल) को सूची-II (जिला) से सुमेलित कीजिए:\nसूची-1: A. राजगीर की पहाड़ियाँ, B. प्रागैतिहासिक मुंगेर पहाड़ियाँ, C. खड़गपुर पहाड़ियाँ, D. गुरपा पहाड़ी\nसूची-II: 1. नालंदा, 2. मुंगेर, 3. मुंगेर/जमुई, 4. गया\nसही कूट चुनिए:", "Match List-I (Bihar Hills/Site) with List-II (District):\nList-I: A. Rajgir Hills, B. Prehistoric Munger Hills, C. Kharagpur Hills, D. Gurpa Hill\nList-II: 1. Nalanda, 2. Munger, 3. Munger/Jamui, 4. Gaya\nSelect correct code:"],
+    [["A-1, B-2, C-3, D-4", "A-1, B-2, C-3, D-4"], ["A-1, B-3, C-2, D-4", "A-1, B-3, C-2, D-4"], ["A-2, B-1, C-4, D-3", "A-2, B-1, C-4, D-3"], ["A-4, B-2, C-3, D-1", "A-4, B-2, C-3, D-1"]],
+    0,
+    ["सही सुमेल:\n• राजगीर की पहाड़ियाँ - नालंदा (1)\n• प्रागैतिहासिक मुंगेर पहाड़ियाँ - मुंगेर (2)\n• खड़गपुर पहाड़ियाँ - मुंगेर/जमुई (3)\n• गुरपा पहाड़ी - गया (4)", "Correct matches for Bihar Hills: Rajgir (Nalanda), Munger prehistoric sites (Munger), Kharagpur (Munger/Jamui), Gurpa Hill (Gaya)."]
+  ],
+  [
+    ["भारत में प्रथम कोयला खान कहाँ खोदी गयी?", "Where was India's first coal mine excavated?"],
+    [["आसनसोल", "Asansol"], ["झरिया", "Jharia"], ["रानीगंज", "Raniganj"], ["धनबाद", "Dhanbad"]],
+    2,
+    ["भारत में पहली कोयला खदान 1774 में ईस्ट इंडिया कंपनी के दौरान पश्चिम बंगाल के रानीगंज (Raniganj) में खोदी गई थी।\n• झारखंड का झरिया भारत का सबसे बड़ा कोयला क्षेत्र है। गोंडवाना काल की चट्टानों से 98% कोयला मिलता है।", "India's first coal mine was operated at Raniganj, West Bengal in 1774."]
+  ],
+  [
+    ["भारत के कितने राज्यों से गंगा नदी प्रवाहित होती है?", "Through how many states in India does the Ganga river flow?"],
+    [["5", "5"], ["7", "7"], ["9", "9"], ["11", "11"]],
+    0,
+    ["गंगा नदी भारत के 5 राज्यों से होकर बहती है:\n 1. उत्तराखंड\n 2. उत्तर प्रदेश (सर्वाधिक लंबाई)\n 3. बिहार (लगभग 445 किमी)\n 4. झारखंड (साहिबगंज)\n 5. पश्चिम बंगाल\n• गंगा नदी की कुल लंबाई 2,525 किमी है।", "Ganga flows through 5 Indian states: Uttarakhand, Uttar Pradesh, Bihar, Jharkhand, and West Bengal."]
+  ],
+  [
+    ["जे०एन० टाटा ने सिंहभूम में किन दो नदियों के मध्य अपनी लोहे और इस्पात की कम्पनी स्थापित की थी?", "Between which two rivers did J.N. Tata establish his Iron and Steel company (TISCO) in Singhbhum?"],
+    [["गोगरा और गंगा", "Ghaghara and Ganga"], ["गंडक और कोशी", "Gandak and Kosi"], ["सुवर्णरेखा और खरकई", "Subarnarekha and Kharkai"], ["गोगरा और गंडक", "Ghaghara and Gandak"]],
+    2,
+    ["जमशेदजी टाटा द्वारा 1907 में टिस्को (TISCO) की स्थापना झारखंड (तत्कालीन बिहार के सिंहभूम जिले) के साकची में सुवर्णरेखा और खरकई नदियों के संगम पर की गई थी।", "TISCO was established at Sakchi (Jamshedpur) in 1907 at the confluence of Subarnarekha and Kharkai rivers."]
+  ],
+  [
+    ["म्यांमार के साथ भारत के किन राज्यों की सीमाएँ मिलती हैं?", "Which Indian states share a border with Myanmar?"],
+    [["अरुणाचल प्रदेश, नागालैंड, मणिपुर, मिजोरम", "Arunachal Pradesh, Nagaland, Manipur, Mizoram"], ["अरुणाचल प्रदेश, असम, मणिपुर, मिजोरम", "Arunachal Pradesh, Assam, Manipur, Mizoram"], ["मणिपुर, मिजोरम, नागालैंड, त्रिपुरा", "Manipur, Mizoram, Nagaland, Tripura"], ["उपर्युक्त में से एक से अधिक", "More than one of the above"]],
+    0,
+    ["म्यांमार के साथ सीमा साझा करने वाले भारत के 4 राज्य (उत्तर से दक्षिण): अरुणाचल प्रदेश, नागालैंड, मणिपुर और मिजोरम। कुल सीमा की लंबाई 1,643 किमी है।", "4 Indian states border Myanmar: Arunachal Pradesh, Nagaland, Manipur, and Mizoram."]
+  ],
+  [
+    ["भारत की नदियों के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\n1. गोदावरी भारत की सबसे लंबी प्रायद्वीपीय नदी है, जिसे 'दक्षिणी गंगा' भी कहा जाता है।\n2. नर्मदा और ताप्ती नदियाँ दरार घाटी (Rift Valley) से होकर बहती हैं और अरब सागर में गिरती हैं।\n3. कृष्णा नदी का उद्गम महाबलेश्वर के पास से होता है।\n4. लूनी नदी कच्छ के रन में विलीन हो जाती है।\nउपर्युक्त में से कौन-से कथन सही हैं?", "Consider the following statements regarding Indian rivers:\n1. Godavari is the longest peninsular river, also called 'Dakshin Ganga'.\n2. Narmada and Tapi flow through rift valleys into the Arabian Sea.\n3. Krishna River originates near Mahabaleshwar.\n4. Luni River disappears in the Rann of Kutch.\nWhich of the statements are correct?"],
+    [["केवल 1 और 2", "Only 1 and 2"], ["केवल 2, 3 और 4", "Only 2, 3 and 4"], ["केवल 1, 3 और 4", "Only 1, 3 and 4"], ["1, 2, 3 और 4 सभी", "All 1, 2, 3 and 4"]],
+    3,
+    ["दिए गए सभी चारों कथन (1, 2, 3 और 4) भारत की नदियों के संदर्भ में पूरी तरह सही हैं।", "All statements 1, 2, 3, and 4 are facts regarding Indian drainage systems."]
+  ],
+  [
+    ["निम्नलिखित में से कूलगार्डी (Kalgoorlie/Coolgardie) में कौन-सी क्रिया सम्पन्न होती है?", "Which mining activity is prominent in Coolgardie / Kalgoorlie?"],
+    [["कोयला खनन", "Coal mining"], ["ताँबा खनन", "Copper mining"], ["सोना खनन", "Gold mining"], ["वानिकी", "Forestry"]],
+    2,
+    ["कालगुर्डी और कूलगार्डी पश्चिमी ऑस्ट्रेलिया में स्थित विश्व प्रसिद्ध 'सोना खनन' (Gold Mining) क्षेत्र हैं।", "Coolgardie and Kalgoorlie in Western Australia are world-renowned for gold mining."]
+  ],
+  [
+    ["निम्नलिखित स्थानों को उद्योगों से मिलाइए तथा सही कूट का चयन कीजिए:\nस्थान: (a) बेंगलुरु, (b) कोरबा, (c) जमशेदपुर, (d) मलांजखण्ड\nउद्योग: (i) लौह-इस्पात, (ii) ताँबा, (iii) वायुयान, (iv) एल्युमिनियम\nसही कूट चुनिए:", "Match the places with their industries:\nPlaces: (a) Bengaluru, (b) Korba, (c) Jamshedpur, (d) Malanjkhand\nIndustries: (i) Iron and Steel, (ii) Copper, (iii) Aircraft, (iv) Aluminium\nSelect correct code:"],
+    [["(a)-i, (b)-ii, (c)-iii, (d)-iv", "(a)-i, (b)-ii, (c)-iii, (d)-iv"], ["(a)-ii, (b)-i, (c)-iv, (d)-iii", "(a)-ii, (b)-i, (c)-iv, (d)-iii"], ["(a)-iv, (b)-iii, (c)-ii, (d)-i", "(a)-iv, (b)-iii, (c)-ii, (d)-i"], ["(a)-iii, (b)-iv, (c)-i, (d)-ii", "(a)-iii, (b)-iv, (c)-i, (d)-ii"]],
+    3,
+    ["सही सुमेल:\n• बेंगलुरु - वायुयान (HAL - Aircraft industry) (iii)\n• कोरबा - एल्युमिनियम (BALCO) (iv)\n• जमशेदपुर - लौह-इस्पात (TISCO) (i)\n• मलांजखण्ड - ताँबा (MP) (ii)", "Correct matches: Bengaluru (Aircraft), Korba (Aluminium), Jamshedpur (Iron-Steel), Malanjkhand (Copper)."]
+  ],
+  [
+    ["निम्नलिखित किस पहाड़ी पर पूर्वी घाट पश्चिमी घाट से मिलता है?", "At which of the following hills do the Eastern Ghats and Western Ghats meet?"],
+    [["पालनी पहाड़ी", "Palani Hills"], ["अनाइमुड़ी पहाड़ी", "Anamudi Hills"], ["नीलगिरि पहाड़ी", "Nilgiri Hills"], ["शेवराय पहाड़ी", "Shevaroy Hills"]],
+    2,
+    ["नीलगिरि पहाड़ियाँ (Nilgiri Hills) पूर्वी घाट तथा पश्चिमी घाट का संगम स्थल हैं।\n• नीलगिरि की सबसे ऊँची चोटी डोडाबेट्टी (2,637 मी) है।\n• दक्षिण भारत की सबसे ऊँची चोटी अनाईमुडी (2,695 मी - अन्नामलाई श्रेणी) है।", "The Nilgiri Hills serve as the junction point where the Western Ghats and Eastern Ghats meet."]
+  ],
+  [
+    ["स्वर्णिम चतुर्भुज (Golden Quadrilateral) क्या है?", "What is Golden Quadrilateral?"],
+    [["महानगरों को जोड़ने वाला रेलमार्ग", "Railway line connecting metros"], ["प्रमुख वायु मार्ग", "Major air routes"], ["राष्ट्रीय राजमार्ग परियोजना", "National Highway Project"], ["स्वर्ण व्यापार का मार्ग", "Gold trade route"]],
+    2,
+    ["स्वर्णिम चतुर्भुज भारत की एक प्रमुख राष्ट्रीय राजमार्ग परियोजना (National Highway Project) है।\n• यह भारत के 4 प्रमुख महानगरों (दिल्ली, मुंबई, चेन्नई, कोलकाता) को 4/6 लेन वाले राजमार्गों से जोड़ती है। इसकी लंबाई 5,846 किमी है।\n• इसकी शुरुआत 2001 में अटल बिहारी वाजपेयी द्वारा की गई थी।", "Golden Quadrilateral is a National Highway network connecting Delhi, Mumbai, Chennai, and Kolkata."]
+  ],
+  [
+    ["भारत में एकमात्र राज्य/केन्द्र शासित प्रदेश जो केसर (Saffron) का उत्पादन करता है-", "The only State/UT in India that produces Saffron is-"],
+    [["हिमाचल प्रदेश", "Himachal Pradesh"], ["असम", "Assam"], ["जम्मू-कश्मीर", "Jammu & Kashmir"], ["मेघालय", "Meghalaya"]],
+    2,
+    ["जम्मू-कश्मीर भारत का एकमात्र केंद्र शासित प्रदेश है जो केसर (Saffron / ज़ाफरान) का उत्पादन करता है।\n• केसर की खेती कश्मीर घाटी के 'करेवा' (Karewa) मिट्टी के मैदानों (पंपोर क्षेत्र) में की जाती है। इसे GI टैग भी प्राप्त है।", "Jammu and Kashmir is the sole producer of Saffron in India, grown in Karewa soil deposits."]
+  ],
+  [
+    ["निम्नलिखित नगरों में अलकनन्दा एवं भागीरथी कहाँ मिलकर गंगा नदी बनाते हैं?", "At which place do Alaknanda and Bhagirathi rivers meet to form the Ganga?"],
+    [["हरिद्वार", "Haridwar"], ["ऋषिकेश", "Rishikesh"], ["रुद्रप्रयाग", "Rudraprayag"], ["देवप्रयाग", "Devprayag"]],
+    3,
+    ["देवप्रयाग (उत्तराखंड) में अलकनंदा और भागीरथी नदियों का संगम होता है, और इसके बाद इस संयुक्त धारा को 'गंगा' नदी कहा जाता है।\n• रुद्रप्रयाग में अलकनंदा और मंदाकिनी मिलती हैं।", "Devprayag is the holy confluence of Bhagirathi and Alaknanda rivers, beyond which it flows as Ganga."]
+  ],
+  [
+    ["भारतीय रिज़र्व बैंक (RBI) के संदर्भ में निम्नलिखित कथनों पर विचार कीजिए:\n1. RBI की स्थापना 1 अप्रैल, 1935 को हिल्टन-यंग आयोग की सिफारिश पर हुई थी।\n2. RBI का राष्ट्रीयकरण 1 जनवरी, 1949 को किया गया।\n3. RBI का प्रथम गवर्नर सर ओसबोर्न स्मिथ था, जबकि प्रथम भारतीय गवर्नर सी.डी. देशमुख थे।\n4. रेपो दर वह दर है, जिस पर वाणिज्यिक बैंक RBI से अल्पकालिक ऋण लेते हैं।\nउपर्युक्त में से कौन-से कथन सही हैं?", "Consider the following statements regarding Reserve Bank of India (RBI):\n1. RBI was set up on 1 April 1935 on Hilton-Young Commission recommendation.\n2. RBI was nationalized on 1 Jan 1949.\n3. Sir Osborne Smith was 1st Governor; C.D. Deshmukh was 1st Indian Governor.\n4. Repo rate is the rate at which commercial banks borrow short-term funds from RBI.\nWhich statements are correct?"],
+    [["केवल 1, 2 और 3", "Only 1, 2 and 3"], ["केवल 2, 3 और 4", "Only 2, 3 and 4"], ["केवल 1, 3 और 4", "Only 1, 3 and 4"], ["1, 2, 3 और 4 सभी", "All 1, 2, 3 and 4"]],
+    3,
+    ["भारतीय रिज़र्व बैंक (RBI) के संबंध में दिए गए सभी चारों कथन (1, 2, 3 और 4) पूरी तरह सत्य हैं।", "All 4 statements are correct historical and operational facts about the Reserve Bank of India."]
+  ],
+  [
+    ["'काली क्रांति' (Black Revolution) सम्बन्धित है-", "'Black Revolution' is related to-"],
+    [["मत्स्य उत्पादन", "Fish production"], ["उर्वरक उत्पादन", "Fertilizer production"], ["कच्चा तेल उत्पादन", "Crude petroleum production"], ["सरसों उत्पादन", "Mustard production"]],
+    2,
+    ["काली क्रांति (Black Revolution) का संबंध कच्चा तेल / पेट्रोलियम उत्पादन से है।\n• अन्य: मत्स्य (नीली क्रांति), उर्वरक (धूसर/Grey क्रांति), सरसों/तिलहन (पीली क्रांति)।", "Black Revolution is related to boosting petroleum / crude oil production."]
+  ],
+  [
+    ["भारत के किस राज्य में सबसे अधिक सूती वस्त्र की मिलें हैं?", "Which Indian state has the highest number of cotton textile mills?"],
+    [["मध्य प्रदेश", "Madhya Pradesh"], ["महाराष्ट्र", "Maharashtra"], ["गुजरात", "Gujarat"], ["पश्चिम बंगाल", "West Bengal"]],
+    1,
+    ["महाराष्ट्र राज्य में सबसे अधिक सूती वस्त्र मिलें और उत्पादन है।\n• मुंबई को 'भारत की सूती वस्त्रों की राजधानी' (Cottonopolis of India) कहा जाता है।\n• पहली सफल आधुनिक सूती वस्त्र मिल 1854 में कावसजी डाबर द्वारा मुंबई में लगाई गई थी।", "Maharashtra leads India in cotton textile mills; Mumbai is known as the Cottonopolis of India."]
+  ],
+  [
+    ["निम्न में से नकदी फसल (Cash Crop) कौन-सी नहीं है?", "Which of the following is NOT a Cash Crop?"],
+    [["जूट", "Jute"], ["मूँगफली", "Groundnut"], ["ज्वार", "Jowar / Sorghum"], ["गन्ना", "Sugarcane"]],
+    2,
+    ["ज्वार (Jowar / Sorghum) नकदी फसल नहीं है, बल्कि यह एक मोटा खाद्यान्न फसल (Foodgrain crop) है।\n• जूट, मूँगफली, गन्ना, कपास, तंबाकू और चाय/कॉफी नकदी फसलें हैं।", "Jowar is a coarse foodgrain crop, whereas jute, groundnut, and sugarcane are commercial cash crops."]
+  ],
+  [
+    ["निम्नलिखित में से किस राज्य में सर्वाधिक क्षेत्र वनों के अंतर्गत पाया जाता है?", "Among the given options, which state has the maximum area under forest cover?"],
+    [["हिमाचल प्रदेश", "Himachal Pradesh"], ["असम", "Assam"], ["आंध्र प्रदेश", "Andhra Pradesh"], ["अरुणाचल प्रदेश", "Arunachal Pradesh"]],
+    3,
+    ["दिए गए विकल्पों में अरुणाचल प्रदेश में सर्वाधिक क्षेत्र वनों के अंतर्गत पाया जाता है।\n• (भारत में सर्वाधिक वन क्षेत्र वाला राज्य मध्य प्रदेश है, उसके बाद अरुणाचल प्रदेश दूसरे स्थान पर आता है)।", "Among options provided, Arunachal Pradesh has the largest area under forest cover (2nd nationwide after MP)."]
+  ],
+  [
+    ["निम्नलिखित में से कौन-सी मिट्टी नदियों द्वारा निर्मित है?", "Which of the following soil types is formed by river deposits?"],
+    [["लाल मिट्टी", "Red soil"], ["काली मिट्टी", "Black soil"], ["जलोढ़ मिट्टी", "Alluvial soil"], ["लेटेराइट मिट्टी", "Laterite soil"]],
+    2,
+    ["जलोढ़ मिट्टी (Alluvial Soil) नदियों द्वारा पर्वतों से बहाकर लाए गए गाद/अवसादों के निक्षेपण से बनती है।\n• यह भारत की सबसे उपजाऊ और सर्वाधिक क्षेत्रफल (लगभग 40%) पर फैली मिट्टी है।\n• इसके दो प्रकार हैं: खादर (नवीन जलोढ़) और बांगर (पुरानी जलोढ़)।", "Alluvial soil is formed by river silt deposition, comprising Khadar (new alluvium) and Bhangar (old alluvium)."]
+  ]
+];
+
+/* ============ STATE ============ */
+const state = DATA.map(() => ({selected:null, lang:0, expl:false})); // lang: 0=hi,1=en
+let instaMode = false;
+let retakeIdx = [];
+const startTime = new Date();
+let submitted = false;
+let currentFilter = 'all';
+
+/* ============ RENDER ============ */
+const container = document.getElementById('quizContainer');
+
+function optLetter(i){ return ['A','B','C','D'][i]; }
+
+function renderQuestion(idx){
+  const d = DATA[idx];
+  const s = state[idx];
+  const lang = s.lang;
+  const reveal = submitted || (instaMode && s.selected !== null);
+
+  const card = document.createElement('div');
+  card.className = 'qcard';
+  card.id = 'q'+idx;
+
+  const head = document.createElement('div');
+  head.className = 'qhead';
+  const num = document.createElement('div');
+  num.className = 'qnum';
+  num.textContent = (idx+1) + '.';
+  const langBtn = document.createElement('button');
+  langBtn.className = 'langbtn';
+  langBtn.type = 'button';
+  langBtn.textContent = lang === 0 ? '✦ In English' : '✦ हिंदी में';
+  langBtn.onclick = () => { s.lang = s.lang === 0 ? 1 : 0; rerenderQuestion(idx); };
+  head.appendChild(num);
+  head.appendChild(langBtn);
+  card.appendChild(head);
+
+  const qtext = document.createElement('p');
+  qtext.className = 'qtext';
+  qtext.textContent = d[0][lang];
+  card.appendChild(qtext);
+
+  const opts = document.createElement('div');
+  opts.className = 'options';
+  d[1].forEach((opt, oi) => {
+    const optDiv = document.createElement('div');
+    optDiv.className = 'opt';
+    if(reveal){
+      optDiv.classList.add('locked');
+      if(oi === d[2]) optDiv.classList.add('review-correct');
+      else if(oi === s.selected) optDiv.classList.add('review-wrong');
+    } else if(s.selected === oi){
+      optDiv.classList.add('selected');
+    }
+    const tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = '(' + optLetter(oi) + ')';
+    const txt = document.createElement('span');
+    txt.textContent = opt[lang];
+    optDiv.appendChild(tag);
+    optDiv.appendChild(txt);
+    if(!reveal){
+      optDiv.onclick = () => {
+        s.selected = oi;
+        if(instaMode) s.expl = true;
+        rerenderQuestion(idx);
+        updateProgress();
+      };
+    }
+    opts.appendChild(optDiv);
+  });
+  card.appendChild(opts);
+
+  const foot = document.createElement('div');
+  foot.className = 'qfoot';
+
+  if(reveal){
+    const isCorrect = s.selected === d[2];
+    card.classList.add(isCorrect ? 'correct' : 'incorrect');
+    const pill = document.createElement('span');
+    pill.className = 'result-pill ' + (isCorrect ? 'correct' : 'incorrect');
+    pill.textContent = isCorrect ? '✓ Correct' : (s.selected === null ? '— Not Answered' : '✗ Incorrect');
+    foot.appendChild(pill);
+  }
+
+  const explBtn = document.createElement('button');
+  explBtn.className = 'iconbtn small explbtn' + (s.expl ? ' active' : '');
+  explBtn.type = 'button';
+  explBtn.title = 'Show/Hide Explanation / व्याख्या देखें';
+  explBtn.textContent = '💡';
+  const explDiv = document.createElement('div');
+  explDiv.className = 'explanation' + (s.expl ? ' open' : '');
+  explDiv.textContent = d[3][lang];
+  explBtn.onclick = () => {
+    s.expl = !s.expl;
+    explDiv.classList.toggle('open', s.expl);
+    explBtn.classList.toggle('active', s.expl);
+    updateExpandBtn();
+  };
+  foot.appendChild(explBtn);
+  card.appendChild(foot);
+  card.appendChild(explDiv);
+
+  return card;
+}
+
+function rerenderQuestion(idx){
+  const old = document.getElementById('q'+idx);
+  const fresh = renderQuestion(idx);
+  old.replaceWith(fresh);
+  updateExpandBtn();
+}
+
+function renderAll(){
+  container.innerHTML = '';
+  let indices = DATA.map((_,i)=>i);
+  if(submitted){
+    if(currentFilter === 'incorrect') indices = indices.filter(i => state[i].selected !== DATA[i][2]);
+    else if(currentFilter === 'correct') indices = indices.filter(i => state[i].selected === DATA[i][2]);
+  }
+  if(currentFilter === 'retake' && !submitted) indices = retakeIdx;
+  if(indices.length === 0){
+    const msg = document.createElement('p');
+    msg.style.textAlign = 'center';
+    msg.style.color = '#5a5145';
+    msg.textContent = 'कोई प्रश्न नहीं मिला। / No questions found in this view.';
+    container.appendChild(msg);
+    return;
+  }
+  indices.forEach(i => container.appendChild(renderQuestion(i)));
+  updateExpandBtn();
+}
+
+function updateProgress(){
+  const answered = state.filter(s => s.selected !== null).length;
+  document.getElementById('progressFill').style.width = (answered) + '%';
+  document.getElementById('progressLabel').textContent = answered + ' / 100 answered';
+}
+
+/* ============ SUBMIT & SCORE ============ */
+document.getElementById('submitBtn').addEventListener('click', () => {
+  const unanswered = state.filter(s => s.selected === null).length;
+  if(unanswered > 0){
+    const ok = confirm(unanswered + ' प्रश्न अभी भी अनुत्तरित हैं। क्या आप फिर भी जमा करना चाहते हैं?\n\n' + unanswered + ' question(s) are still unanswered. Submit anyway?');
+    if(!ok) return;
+  }
+  finalizeSubmit();
+});
+
+function finalizeSubmit(){
+  submitted = true;
+  currentFilter = 'all';
+  document.getElementById('retakeBanner').style.display = 'none';
+  document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('showAllBtn').classList.add('active');
+
+  const score = state.filter((s,i) => s.selected === DATA[i][2]).length;
+  document.getElementById('scoreVal').textContent = score;
+  document.getElementById('scoreSub').textContent = score + ' सही, ' + (100-score) + ' गलत/अनुत्तरित out of 100';
+  clearInterval(timerInterval);
+  timerDisplay.classList.remove('timeup');
+  document.getElementById('timeTakenLabel').textContent = 'समय लगा / Time Taken: ' + formatTimer(elapsedSeconds);
+  document.getElementById('scorePanel').style.display = 'block';
+  document.getElementById('submitBtn').textContent = 'Submitted ✓';
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('submitBtn').style.opacity = '0.6';
+  document.getElementById('submitBtn').style.cursor = 'default';
+
+  renderAll();
+  document.getElementById('scorePanel').scrollIntoView({behavior:'smooth'});
+}
+
+document.getElementById('jumpBtn').addEventListener('click', () => {
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ============ FILTERS ============ */
+function setFilter(f, btnId){
+  currentFilter = f;
+  document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));
+  document.getElementById(btnId).classList.add('active');
+  document.getElementById('retakeBanner').style.display = 'none';
+  renderAll();
+  window.scrollTo({top: document.getElementById('scorePanel').offsetTop - 10, behavior:'smooth'});
+}
+document.getElementById('showAllBtn').addEventListener('click', () => setFilter('all','showAllBtn'));
+document.getElementById('showIncorrectBtn').addEventListener('click', () => setFilter('incorrect','showIncorrectBtn'));
+document.getElementById('showCorrectBtn').addEventListener('click', () => setFilter('correct','showCorrectBtn'));
+
+/* ============ RETAKE INCORRECT ============ */
+document.getElementById('retakeBtn').addEventListener('click', () => {
+  const incorrectIdx = state.map((s,i)=> s.selected !== DATA[i][2] ? i : -1).filter(i=>i!==-1);
+  if(incorrectIdx.length === 0){
+    alert('बधाई हो! सभी उत्तर सही हैं। / Congratulations! All answers are correct — nothing to retake.');
+    return;
+  }
+  incorrectIdx.forEach(i => { state[i].selected = null; state[i].expl = false; });
+  retakeIdx = incorrectIdx;
+  submitted = false;
+  currentFilter = 'retake';
+  document.getElementById('scorePanel').style.display = 'none';
+  document.getElementById('submitBtn').textContent = 'Submit All Answers';
+  document.getElementById('submitBtn').disabled = false;
+  document.getElementById('submitBtn').style.opacity = '1';
+  document.getElementById('submitBtn').style.cursor = 'pointer';
+
+  const banner = document.getElementById('retakeBanner');
+  banner.style.display = 'block';
+  banner.textContent = 'पुनः प्रयास मोड: केवल ' + incorrectIdx.length + ' पहले गलत प्रश्न नीचे दिखाए गए हैं। / Retake mode: only your ' + incorrectIdx.length + ' previously incorrect question(s) are shown below.';
+
+  container.innerHTML = '';
+  incorrectIdx.forEach(i => container.appendChild(renderQuestion(i)));
+  updateProgress();
+  window.scrollTo({top:0, behavior:'smooth'});
+});
+
+/* ============ GLOBAL LANGUAGE TOGGLE ============ */
+let globalLang = 0; // 0 = hi, 1 = en
+const langGlobalBtn = document.getElementById('langGlobalBtn');
+langGlobalBtn.addEventListener('click', () => {
+  globalLang = globalLang === 0 ? 1 : 0;
+  state.forEach(s => { s.lang = globalLang; });
+  langGlobalBtn.textContent = globalLang === 0 ? 'In English' : 'हिंदी में';
+  renderAll();
+});
+
+/* ============ TIMER ============ */
+const TIMER_CAP_SECONDS = 100 * 60;
+let elapsedSeconds = 0;
+const timerText = document.getElementById('timerText');
+const timerDisplay = document.getElementById('timerDisplay');
+function formatTimer(totalSeconds){
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const sec = totalSeconds % 60;
+  return h + ':' + String(m).padStart(2,'0') + ':' + String(sec).padStart(2,'0');
+}
+const timerInterval = setInterval(() => {
+  if(elapsedSeconds >= TIMER_CAP_SECONDS){
+    timerDisplay.classList.add('timeup');
+    clearInterval(timerInterval);
+    return;
+  }
+  elapsedSeconds++;
+  timerText.textContent = formatTimer(elapsedSeconds);
+}, 1000);
+
+/* ============ DASHBOARD MODAL ============ */
+const dashboardModal = document.getElementById('dashboardModal');
+function renderDashboard(){
+  const grid = document.getElementById('dashGrid');
+  grid.innerHTML = '';
+  state.forEach((s,i) => {
+    const cell = document.createElement('button');
+    cell.type = 'button';
+    cell.className = 'dashCell ' + (s.selected !== null ? 'attempted' : 'unattempted');
+    cell.textContent = i + 1;
+    cell.title = 'Question ' + (i+1) + (s.selected !== null ? ' — Attempted' : ' — Unattempted');
+    cell.onclick = () => {
+      if(submitted && currentFilter !== 'all'){
+        currentFilter = 'all';
+        document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));
+        document.getElementById('showAllBtn').classList.add('active');
+        renderAll();
+      }
+      dashboardModal.classList.remove('open');
+      const target = document.getElementById('q'+i);
+      if(target) target.scrollIntoView({behavior:'smooth', block:'center'});
+    };
+    grid.appendChild(cell);
+  });
+}
+document.getElementById('dashboardBtn').addEventListener('click', () => {
+  renderDashboard();
+  dashboardModal.classList.add('open');
+});
+document.getElementById('dashboardCloseBtn').addEventListener('click', () => dashboardModal.classList.remove('open'));
+dashboardModal.addEventListener('click', (e) => { if(e.target === dashboardModal) dashboardModal.classList.remove('open'); });
+
+/* ============ FULLSCREEN TOGGLE & HEADER DOUBLE TAP ============ */
+function toggleFullScreen(){
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+  } else {
+    document.exitFullscreen().catch(()=>{});
+  }
+}
+const fullscreenBtn = document.getElementById('fullscreenBtn');
+fullscreenBtn.addEventListener('click', toggleFullScreen);
+document.addEventListener('fullscreenchange', () => {
+  fullscreenBtn.textContent = document.fullscreenElement ? '🗗' : '⛶';
+});
+
+// Double tap / double click header feature
+let lastHeaderTap = 0;
+const headerElem = document.getElementById('headerElem');
+headerElem.addEventListener('click', (e) => {
+  if(e.target.closest('.toolbar') || e.target.closest('.progress-wrap')) return;
+  const now = new Date().getTime();
+  if (now - lastHeaderTap < 300) {
+    toggleFullScreen();
+  }
+  lastHeaderTap = now;
+});
+
+/* ============ SEARCH BAR FEATURE ============ */
+const searchBox = document.getElementById('searchBox');
+searchBox.addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase().trim();
+  if(!query) return;
+  const matchIndex = DATA.findIndex(d => 
+    d[0][0].toLowerCase().includes(query) || 
+    d[0][1].toLowerCase().includes(query)
+  );
+  if(matchIndex !== -1){
+    if(submitted && currentFilter !== 'all'){
+      currentFilter = 'all';
+      document.querySelectorAll('.filterRow button').forEach(b=>b.classList.remove('active'));
+      document.getElementById('showAllBtn').classList.add('active');
+      renderAll();
+    }
+    const elem = document.getElementById('q' + matchIndex);
+    if(elem) elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+});
+
+/* ============ INSTA-RESPONSE & EXPAND-ALL ============ */
+function keepScroll(fn){ const y = window.scrollY; fn(); window.scrollTo(0, y); }
+const instaBtn = document.getElementById('instaBtn');
+instaBtn.addEventListener('click', () => {
+  instaMode = !instaMode;
+  instaBtn.classList.toggle('active', instaMode);
+  instaBtn.setAttribute('aria-pressed', instaMode);
+  keepScroll(renderAll);
+});
+const expandAllBtn = document.getElementById('expandAllBtn');
+function updateExpandBtn(){
+  const all = state.every(s => s.expl);
+  expandAllBtn.textContent = all ? '▴ Collapse All Explanations' : '▾ Expand All Explanations';
+}
+expandAllBtn.addEventListener('click', () => {
+  const target = !state.every(s => s.expl);
+  state.forEach(s => { s.expl = target; });
+  keepScroll(renderAll);
+});
+
+/* ============ INIT ============ */
+renderAll();
+updateProgress();
+
+/* ============ EXCEL RECORD EXPORT ============ */
+(function(){
+  const HEAD = ['Date','Test Paper/Set','Score','Duration','Time','Answers','Incorrect'];
+  let stamp = null, override = null;
+  const btn = document.getElementById('copyExcelBtn');
+  const status = document.getElementById('copyStatus');
+  const clean = v => String(v).replace(/[\t\r\n]+/g,' ').trim();
+  const p2 = n => String(n).padStart(2,'0');
+
+  function getResponsesList(){
+    const list = [];
+    state.forEach((x, i) => {
+      if(x.selected !== null){
+        const isCorrect = x.selected === DATA[i][2];
+        const mark = isCorrect ? '✓' : '✗';
+        list.push((i + 1) + '.' + optLetter(x.selected) + ' ' + mark);
+      } else {
+        list.push((i + 1) + '.- ✗');
+      }
+    });
+    return list.join(', ');
+  }
+
+  function getIncorrectList(){
+    const list = [];
+    state.forEach((x, i) => {
+      if(x.selected !== DATA[i][2]){
+        list.push(i + 1);
+      }
+    });
+    return list.length ? list.join(', ') : 'None';
+  }
+
+  function buildRow(){
+    const d = stamp || new Date();
+    const hm = x => p2(x.getHours())+':'+p2(x.getMinutes());
+    const date = override ? override.date : startTime.getFullYear()+'-'+p2(startTime.getMonth()+1)+'-'+p2(startTime.getDate());
+    const range = override ? override.range : hm(startTime)+' - '+hm(d);
+    const score = state.filter((x,i)=> x.selected === DATA[i][2]).length;
+    const paper = clean(document.getElementById('paperName').value) || 'Test';
+    const responsesList = getResponsesList();
+    const incorrectList = getIncorrectList();
+    return [date, paper, "'"+score+'/'+DATA.length, formatTimer(elapsedSeconds), range, responsesList, incorrectList];
+  }
+  function renderPreview(){
+    const r = buildRow();
+    document.getElementById('exportPreview').innerHTML =
+      '<tr>'+HEAD.map(h=>'<th>'+h+'</th>').join('')+'</tr><tr>'+r.map(v=>'<td>'+String(v).replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</td>').join('')+'</tr>';
+  }
+  function tsv(){
+    const rows = [];
+    if(document.getElementById('withHeader').checked) rows.push(HEAD.join('\t'));
+    rows.push(buildRow().map(clean).join('\t'));
+    return rows.join('\n');
+  }
+  async function copyText(t){
+    try{ await navigator.clipboard.writeText(t); return true; }
+    catch(e){
+      const ta = document.createElement('textarea');
+      ta.value = t; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      let ok=false; try{ ok = document.execCommand('copy'); }catch(_){}
+      document.body.removeChild(ta); return ok;
+    }
+  }
+  document.getElementById('submitBtn').addEventListener('click', () => {
+    if(!submitted) return;
+    stamp = new Date();
+    override = null;
+    btn.disabled = false;
+    renderPreview();
+  });
+  document.getElementById('paperName').addEventListener('input', renderPreview);
+  btn.addEventListener('click', async () => {
+    if(!submitted){ status.textContent = 'Submit answers first / पहले उत्तर जमा करें'; return; }
+    const ok = await copyText(tsv());
+    status.textContent = ok ? 'Copied ✓ — paste into Excel (Ctrl+V) / कॉपी हो गया' : 'Copy failed — select the row above and copy manually.';
+    setTimeout(()=>{ status.textContent=''; }, 4000);
+  });
+
+  /* Restore previous attempt */
+  document.getElementById('rcHeads').innerHTML = HEAD.map(h => '<span class="rcChip">'+h+'</span>').join('');
+  const pasteBox = document.getElementById('pasteBox');
+  const rStatus = document.getElementById('restoreStatus');
+  function say(msg, cls){ rStatus.textContent = msg; rStatus.className = cls || ''; }
+  function parseRow(text){
+    if(!text || !text.trim()) return null;
+    const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+    for(let i = lines.length - 1; i >= 0; i--){
+      const cols = lines[i].split('\t').map(c => c.trim().replace(/^"(.*)"$/, '$1'));
+      // Ensure it's not the header row
+      if(cols.length >= 2 && cols[0].toLowerCase() !== 'date'){
+        return cols;
+      }
+    }
+    return null;
+  }
+  document.getElementById('restoreBtn').addEventListener('click', () => {
+    const r = parseRow(pasteBox.value);
+    if(!r){ say('Nothing to restore – paste a valid Excel row first / पहले वैध एक्सेल पंक्ति पेस्ट करें', 'bad'); return; }
+    
+    // We expect at least 6-7 columns (Date, Paper, Score, Duration, Time, Answers, [Incorrect])
+    if(r.length < 5){
+      say('Expected tab-separated columns from Excel, but found fewer. Please copy the entire Excel row.', 'bad'); 
+      return;
+    }
+
+    // Parse Duration / Time
+    const durStr = r[3] || "0:00:00";
+    const m = durStr.match(/^(\d+):(\d{1,2}):(\d{1,2})$/);
+    elapsedSeconds = m ? (+m[1])*3600 + (+m[2])*60 + (+m[3]) : 0;
+    timerText.textContent = formatTimer(elapsedSeconds);
+
+    // Set paper name
+    if(r[1]) document.getElementById('paperName').value = r[1];
+    override = { date: r[0] || '', range: r[4] || '' };
+    stamp = null;
+
+    // Reset current state selections
+    state.forEach(s => { s.selected = null; });
+
+    // Parse Answers column (usually column index 5)
+    const answersCol = r[5] || '';
+    if(answersCol){
+      // Matches pattern like "1.A ✓", "2.B ✗", "12.C"
+      const itemRegex = /(\d+)\.([A-D])\b/gi;
+      let match;
+      const letterMap = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+      while((match = itemRegex.exec(answersCol)) !== null){
+        const qNum = parseInt(match[1], 10) - 1;
+        const optLetter = match[2].toUpperCase();
+        if(qNum >= 0 && qNum < DATA.length && letterMap.hasOwnProperty(optLetter)){
+          state[qNum].selected = letterMap[optLetter];
+        }
+      }
+    }
+
+    // Fallback: If answers column is empty or missing, parse Incorrect list (column index 6)
+    const incorrectCol = r[6] || '';
+    if(!answersCol && incorrectCol && incorrectCol !== 'None'){
+      const incNums = incorrectCol.split(',').map(n => parseInt(n.trim(), 10) - 1).filter(n => !isNaN(n));
+      // Mark all non-incorrect as correct answers
+      DATA.forEach((d, idx) => {
+        if(!incNums.includes(idx)){
+          state[idx].selected = d[2];
+        }
+      });
+    }
+
+    finalizeSubmit();
+    btn.disabled = false;
+    renderPreview();
+    updateProgress();
+    say('Restored ✔ / सफलतापूर्वक पुनः लोड हो गया', 'ok');
+    setTimeout(() => { say(''); }, 4000);
+  });
+})();
+</script>
+</body>
+</html>
